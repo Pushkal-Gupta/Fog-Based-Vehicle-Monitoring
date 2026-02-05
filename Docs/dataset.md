@@ -186,7 +186,7 @@ clamp(0.6 * pad_factor + 0.4 * disc_factor, 0, 1)
 | `< 0.4`   | End-of-life zone            |
 | `< 0.3`   | Unsafe under thermal stress |
 
-### 3.3 Thermal Stress Index
+### 3.3 Charging Status Logic
 
 ```text
 if output_voltage_v between 13.5 and 14.4
@@ -195,14 +195,14 @@ and battery_voltage_v > 12.2
 else → "degraded"
 ```
 
-### 3.4 Thermal Stress Index
+### 3.4 Vibration Analysis
 
 ```text
 expected_engine_band = motor_rpm / 60
 vibration_ratio = dominant_vibration_hz / expected_engine_band
 ```
 
-### 3.5 Thermal Stress Index
+### 3.5 Vehicle Health Score
 
 ```text
 vehicle_health_score =
