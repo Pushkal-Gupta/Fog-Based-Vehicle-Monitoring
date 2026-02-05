@@ -1,0 +1,42 @@
+{
+    "vehicle_id": "VIT_CAR_001",
+    "timestamp_ms": 1707051123456,
+    "health_vectors": {
+        "thermal": {
+            "brake_thermal_margin": -0.21,
+            "engine_thermal_margin": 0.34
+        },
+        "mechanical": {
+            "vibration_anomaly_score": 0.77,
+            "dominant_fault_band_hz": 142
+        },
+        "electrical": {
+            "charging_efficiency_score": 0.81,
+            "battery_degradation_trend": "stable"
+        },
+        "usage_behavior": {
+            "driver_aggression_score": 0.58,
+            "stress_amplification_factor": 1.27
+        }
+    },
+    "rul_estimates": {
+        "engine_rul_pct": 62,
+        "brake_rul_pct": 28,
+        "battery_rul_pct": 74
+    },
+    "fault_inference": {
+        "primary_fault": "BRAKE_THERMAL_SATURATION",
+        "contributing_factors": [
+            "high_brake_temp_rise_rate",
+            "low_brake_pad_remaining",
+            "moderate_driver_aggression"
+        ],
+        "failure_probability_7d": 0.61
+    },
+    "vehicle_health_score": 0.64,
+    "recommendations": {
+        "service_priority": "high",
+        "suggested_action": "Brake inspection and pad replacement",
+        "safe_operating_limit_km": 120
+    }
+}
