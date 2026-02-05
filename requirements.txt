@@ -1,0 +1,25 @@
+# Core Python utilities
+numpy
+scipy
+pandas
+
+# Messaging & networking
+paho-mqtt
+requests
+
+# Backend / APIs
+flask
+fastapi
+uvicorn
+
+# Data handling
+python-dateutil
+
+# AI / ML (optional, lightweight)
+scikit-learn
+
+# Optional edge / fog inference
+tensorflow-lite; platform_system != "Windows"
+
+# Logging & utilities
+loguru
