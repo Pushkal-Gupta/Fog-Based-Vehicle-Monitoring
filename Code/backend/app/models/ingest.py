@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+
 
 
 
@@ -37,14 +38,10 @@ class RulEstimates(BaseModel):
     battery_rul_pct: int
 
 
-
-
 class FaultInference(BaseModel):
     primary_fault: str
     contributing_factors: List[str]
     failure_probability_7d: float
-
-
 
 
 class Recommendations(BaseModel):
@@ -59,7 +56,7 @@ class IngestPayload(BaseModel):
     vehicle_id: str
     timestamp_ms: int
     health_vectors: HealthVectors
-    rul_estimates: RulEstimates
-    fault_inference: FaultInference
-    vehicle_health_score: float
-    recommendations: Recommendations
+    rul_estimates: Optional[RulEstimates] = None
+    fault_inference: Optional[FaultInference] = None
+    vehicle_health_score: Optional[float] = None
+    recommendations: Optional[Recommendations] = None
