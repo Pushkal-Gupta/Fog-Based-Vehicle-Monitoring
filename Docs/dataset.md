@@ -80,7 +80,7 @@ The following structured health vector is computed at the fog layer from raw tel
     "vehicle_id": "VIT_CAR_001",
     "timestamp_ms": 1707051123456,
     "processing_node": "vehicular_fog",
-    "schema_version": "v1.0"
+    "schema_version": "v1.1"
   },
 
   "thermal_state": {
@@ -103,8 +103,7 @@ The following structured health vector is computed at the fog layer from raw tel
   "electrical_state": {
     "battery_voltage_v": 12.6,
     "output_voltage_v": 13.9,
-    "battery_health_pct": 87,
-    "charging_status": "normal"
+    "battery_health_pct": 87
   },
 
   "braking_state": {
@@ -150,9 +149,12 @@ The following structured health vector is computed at the fog layer from raw tel
   },
 
   "global_health": {
-    "vehicle_health_score": 0.64,
-    "alert_level": "critical",
-    "alert_code": "BRAKE_OVERHEAT"
+    "vehicle_health_score": 0.64
+  },
+
+  "fog_decision": {
+    "critical_class": 1,
+    "actuation_triggered": 1
   }
 }
 ```
@@ -254,33 +256,25 @@ clamp(
 
 ```json
 {
-  "event_type": "SAFETY_CRITICAL",
   "timestamp_ms": 1707051123456,
   "decision_origin": "fog_node",
   "cloud_dependency": false,
 
   "trigger": {
-    "subsystem": "braking",
-    "condition": "thermal_runaway",
-    "measured_value": 185.6,
-    "rate_of_change": 4.6,
-    "threshold_exceeded": true
+    "measured_brake_temp_c": 185.6,
+    "brake_temp_rise_rate": 4.6,
+    "threshold_exceeded": 1
   },
 
   "decision": {
-    "action_required": true,
-    "action_code": "BRAKE_COOLING_MODE",
-    "severity": "IMMEDIATE"
+    "critical_class": 1,
+    "actuation_triggered": 1
   },
 
   "actuation_commands": {
     "limit_vehicle_speed_kph": 40,
     "disable_aggressive_braking": true,
-    "enable_brake_cooling_fan": true,
-    "driver_alert": {
-      "type": "audio_visual",
-      "message": "Brake overheating. Reduce speed immediately."
-    }
+    "enable_brake_cooling_fan": true
   },
 
   "confidence": 0.93
@@ -289,7 +283,49 @@ clamp(
 
 ---
 
-## 6. Fog → Cloud → AI → Dashboard Output
+## 6. Fog → Cloud → Dashboard Output
+
+```json
+{
+  "vehicle_id": "VIT_CAR_001",
+  "timestamp_ms": 1707051123456,
+
+  "fog_decision": {
+    "critical_class": 1,
+    "actuation_triggered": 1
+  },
+
+  "health_vectors": {
+    "thermal": {
+      "brake_thermal_margin": -0.21,
+      "engine_thermal_margin": 0.34
+    },
+    "mechanical": {
+      "vibration_anomaly_score": 0.77,
+      "dominant_fault_band_hz": 142
+    },
+    "electrical": {
+      "charging_efficiency_score": 0.81
+    },
+    "usage_behavior": {
+      "driver_aggression_score": 0.58,
+      "stress_amplification_factor": 1.27
+    }
+  },
+
+  "rul_estimates": {
+    "engine_rul_pct": 62,
+    "brake_rul_pct": 28,
+    "battery_rul_pct": 74
+  },
+
+  "vehicle_health_score": 0.64
+}
+```
+
+---
+
+## 7. Cloud → AI → Dashboard Analytical Loop
 
 ```json
 {
@@ -343,7 +379,7 @@ clamp(
 
 ---
 
-## 7. Summary
+## 8. Summary
 
 This dataset demonstrates the complete data lifecycle of the system:
 
