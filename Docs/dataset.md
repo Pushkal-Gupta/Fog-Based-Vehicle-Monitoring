@@ -63,7 +63,6 @@ The following JSON represents the **raw telemetry data** received directly from 
   "vehicle_health_score": 0.64,
 
   "alert_level": "critical",
-  "alert_code": "BRAKE_OVERHEAT"
 }
 ```
 
