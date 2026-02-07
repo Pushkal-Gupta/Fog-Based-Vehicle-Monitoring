@@ -2,7 +2,7 @@
 
 This document explains **all AI and intelligence models used in the Fog-Based Vehicle Monitoring System**, including where they run, what type of models they are, and how they interact with the system data pipeline.
 
-The system intentionally uses **multiple narrow, explainable models** instead of a single monolithic AI. Each model has a clearly bounded responsibility and authority.
+The system intentionally uses **multiple narrow, explainable models** instead of a single monolithic AI. Each model has a clearly bounded responsibility and authority, aligned with strict fog–cloud separation.
 
 ---
 
@@ -10,23 +10,29 @@ The system intentionally uses **multiple narrow, explainable models** instead of
 
 | #   | Model Name                        | Runs On | Model Type                      | Input Dataset Section | Output Dataset Section |
 | --- | --------------------------------- | ------- | ------------------------------- | --------------------- | ---------------------- |
-| 1   | Critical Safety Classifier        | **Fog** | Binary Classifier (Rule-Based)  | Section 1, Section 3  | Section 5              |
-| 2   | Remaining Useful Life (RUL) Model | Cloud   | Regression / Survival Model     | Section 2             | Section 6              |
-| 3   | Failure Probability Model         | Cloud   | Probabilistic Binary Classifier | Section 2 + history   | Section 6              |
-| 4   | Degradation Trend Model           | Cloud   | Multiclass Classifier           | Section 2             | Section 6              |
-| 5   | Fault Explanation Engine          | Cloud   | Rule-Based Inference            | Section 2 + Section 6 | Section 6              |
-| 6   | Recommendation Engine             | Cloud   | Rule-Based Policy Engine        | Section 6             | Section 6              |
+| 1   | Critical Safety Classifier        | **Fog** | Binary Classifier (Rule-Based)  | Section 1 + internal  | Section 5 and 6            |
+| 2   | Remaining Useful Life (RUL) Model | Cloud   | Regression / Survival Model     | Section 6 (+ history) | Section 7              |
+| 3   | Failure Probability Model         | Cloud   | Probabilistic Binary Classifier | Section 6 (+ history) | Section 7              |
+| 4   | Degradation Trend Model           | Cloud   | Multiclass Classifier           | Section 6 (+ history) | Section 7              |
+| 5   | Fault Explanation Engine          | Cloud   | Rule-Based Inference            | Section 7             | Section 7              |
+| 6   | Recommendation Engine             | Cloud   | Rule-Based Policy Engine        | Section 7             | Section 7              |
+
+**Section 2 (Fog Health Vectors) never leaves the fog**  
+
+**Section 6 is the only dataset transmitted to the cloud**
+
+**Section 7 is cloud-internal, analytics-only data derived from Section 6 and history, with no feedback path to fog computation or actuation.**
 
 ---
 
-## Design Principle
+## Design Principles
 
 - **Fog decides** what happens _now_
 - **AI predicts** what may happen _next_
 - **Rules explain** why decisions were made
 - **Hardware executes** actions
 
-No AI model directly triggers actuation.
+No cloud-based model has actuation authority.
 
 ---
 
@@ -49,7 +55,7 @@ This is intentionally **not** a machine learning model.
 
 ### Inputs
 
-From `dataset.md`:
+From `dataset.md` (fog-internal only):
 
 - Section 1: Raw hardware telemetry
 - Section 3: Computed indices
@@ -87,7 +93,6 @@ Estimate how much usable life remains in key vehicle components.
 ### Where It Runs
 
 - Cloud (training + inference)
-- Optional lightweight inference on the fog
 
 ### Model Type
 
@@ -101,15 +106,10 @@ Estimate how much usable life remains in key vehicle components.
 
 ### Inputs
 
-- **Section 2:** Fog-computed health vectors
-- Historical health trends
+- **Section 6:** Processed health and lifecycle data
+- Historical **Section 6** records
 
-**Key features:**
-
-- Thermal stress index
-- Brake health index
-- Vibration anomaly score
-- Electrical efficiency metrics
+Section 6 already encapsulates fog-derived health summaries and trends.
 
 ### Outputs
 
@@ -150,15 +150,8 @@ Predict the likelihood of component failure within a short horizon (for example,
 
 ### Inputs
 
-- **Section 2:** Health vectors
-- Historical degradation patterns
-
-**Key signals:**
-
-- Thermal margins
-- Rate-of-change metrics
-- Vibration anomalies
-- Usage stress factors
+- **Section 6:** Current analytics packet
+- Historical **Section 6** records
 
 ### Outputs
 
@@ -198,8 +191,8 @@ Classify long-term degradation behavior of subsystems.
 
 ### Inputs
 
-- **Section 2:** Electrical and lifecycle state metrics
-- Long-term historical windows
+- **Section 6:** Temporal health and efficiency trends
+- Long-term **Section 6** history
 
 ### Outputs
 
@@ -221,7 +214,7 @@ Improves explainability for maintenance planning.
 
 ### Purpose
 
-Explain **why** a fault is occurring or likely to occur.
+Explain why a fault is occurring or likely to occur.
 
 ### Where It Runs
 
@@ -231,12 +224,15 @@ Explain **why** a fault is occurring or likely to occur.
 
 **Rule-based inference engine**
 
-> This is **not** a machine learning model.
+This is not a machine learning model.
 
 ### Inputs
 
-- **Section 2:** Health vectors
-- **Section 6:** AI predictions (RUL, probabilities)
+- **Section 6 only**, including:
+  - Health vectors
+  - RUL estimates
+  - Failure probabilities
+  - Usage behavior summaries
 
 ### Outputs
 
@@ -263,7 +259,7 @@ Critical for **transparency and human trust.**
 
 ### Purpose
 
-Translate technical risk into **human-readable maintenance guidance**.
+Translate technical risk into human-readable maintenance guidance.
 
 ### Where It Runs
 
@@ -302,7 +298,9 @@ This layer **does not predict**; it **advises**.
 ## Summary
 
 - Fog uses a **binary safety classifier**
-- Cloud uses **regression and probabilistic classifiers**
+- Cloud consumes **only Section 6**
 - AI predicts **future risk**
 - Fog decides **present action**
 - Policies convert predictions into **recommendations**
+
+This architecture guarantees **deterministic safety**, **strict authority separation**, and **cloud-independent operation**, while still enabling advanced analytics and system observability.
