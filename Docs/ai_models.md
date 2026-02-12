@@ -10,14 +10,14 @@ The system intentionally uses **multiple narrow, explainable models** instead of
 
 | #   | Model Name                        | Runs On | Model Type                      | Input Dataset Section | Output Dataset Section |
 | --- | --------------------------------- | ------- | ------------------------------- | --------------------- | ---------------------- |
-| 1   | Critical Safety Classifier        | **Fog** | Binary Classifier (Rule-Based)  | Section 1 + internal  | Section 5 and 6            |
+| 1   | Critical Safety Classifier        | **Fog** | Binary Classifier (Rule-Based)  | Section 1 + internal  | Section 5 and 6        |
 | 2   | Remaining Useful Life (RUL) Model | Cloud   | Regression / Survival Model     | Section 6 (+ history) | Section 7              |
 | 3   | Failure Probability Model         | Cloud   | Probabilistic Binary Classifier | Section 6 (+ history) | Section 7              |
 | 4   | Degradation Trend Model           | Cloud   | Multiclass Classifier           | Section 6 (+ history) | Section 7              |
 | 5   | Fault Explanation Engine          | Cloud   | Rule-Based Inference            | Section 7             | Section 7              |
 | 6   | Recommendation Engine             | Cloud   | Rule-Based Policy Engine        | Section 7             | Section 7              |
 
-**Section 2 (Fog Health Vectors) never leaves the fog**  
+**Section 2 (Fog Health Vectors) never leaves the fog**
 
 **Section 6 is the only dataset transmitted to the cloud**
 
