@@ -13,56 +13,53 @@ The following JSON represents the **raw telemetry data** received directly from 
   "device_id": "ESP32_VEH_01",
   "vehicle_id": "VIT_CAR_001",
   "timestamp_ms": 1707051123456,
-
+  
   "engine_oil_temp_c": 92.4,
   "transmission_temp_c": 78.1,
   "brake_temp_c": 185.6,
   "radiator_temp_c": 88.9,
-
+  
   "motor_rpm": 3120,
-
+  
+  "vehicle_speed_kmph": 72.4,
+  "fuel_efficiency_kmpl": 14.6,
+  
   "battery_voltage_v": 12.6,
   "battery_health_pct": 87,
-
+  
   "fuel_level_pct": 42,
-
+  
   "cabin_humidity_pct": 54.2,
   "cabin_temp_c": 31.5,
-
+  
   "tire_pressure_fl_kpa": 230,
   "tire_pressure_fr_kpa": 228,
   "tire_pressure_rl_kpa": 225,
   "tire_pressure_rr_kpa": 227,
-
+  
   "gyro_x_dps": 0.12,
   "gyro_y_dps": -0.04,
   "gyro_z_dps": 0.98,
-
+  
   "ambient_pressure_kpa": 101.3,
-
+  
   "output_voltage_v": 13.9,
-
+  
   "engine_rpm_variance": 182.4,
   "brake_temp_rise_rate": 4.6,
   "vibration_rms": 0.84,
   "dominant_vibration_hz": 142,
-
+  
   "engine_knock_prob": 0.12,
   "engine_misfire_index": 0.04,
   "engine_load_pct": 68,
-
+  
   "brake_pad_remaining_pct": 34,
   "brake_disc_score": 0.71,
-
-  "driver_aggression_score": 0.58,
-
+  
   "engine_rul_pct": 62,
   "brake_rul_pct": 28,
   "battery_rul_pct": 74,
-
-  "vehicle_health_score": 0.64,
-
-  "alert_level": "critical",
 }
 ```
 
@@ -79,7 +76,7 @@ The following structured health vector is computed at the fog layer from raw tel
     "vehicle_id": "VIT_CAR_001",
     "timestamp_ms": 1707051123456,
     "processing_node": "vehicular_fog",
-    "schema_version": "v1.1"
+    "schema_version": "v1.2"
   },
 
   "thermal_state": {
@@ -102,7 +99,8 @@ The following structured health vector is computed at the fog layer from raw tel
   "electrical_state": {
     "battery_voltage_v": 12.6,
     "output_voltage_v": 13.9,
-    "battery_health_pct": 87
+    "battery_health_pct": 87,
+    "charging_status": "normal"
   },
 
   "braking_state": {
@@ -122,6 +120,7 @@ The following structured health vector is computed at the fog layer from raw tel
   },
 
   "motion_state": {
+    "vehicle_speed_kmph": 72.4,
     "gyro_dps": {
       "x": 0.12,
       "y": -0.04,
@@ -135,10 +134,6 @@ The following structured health vector is computed at the fog layer from raw tel
     "ambient_pressure_kpa": 101.3,
     "cabin_temp_c": 31.5,
     "cabin_humidity_pct": 54.2
-  },
-
-  "driver_state": {
-    "driver_aggression_score": 0.58
   },
 
   "lifecycle_state": {
@@ -262,7 +257,7 @@ clamp(
   "trigger": {
     "measured_brake_temp_c": 185.6,
     "brake_temp_rise_rate": 4.6,
-    "threshold_exceeded": 1
+    "brake_health_index": 0.39
   },
 
   "decision": {
@@ -305,10 +300,6 @@ clamp(
     },
     "electrical": {
       "charging_efficiency_score": 0.81
-    },
-    "usage_behavior": {
-      "driver_aggression_score": 0.58,
-      "stress_amplification_factor": 1.27
     }
   },
 
@@ -361,7 +352,7 @@ clamp(
     "contributing_factors": [
       "high_brake_temp_rise_rate",
       "low_brake_pad_remaining",
-      "moderate_driver_aggression"
+      "sustained_vehicle_speed"
     ],
     "failure_probability_7d": 0.61
   },
