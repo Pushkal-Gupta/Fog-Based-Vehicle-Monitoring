@@ -254,24 +254,18 @@ clamp(
   "decision_origin": "fog_node",
   "cloud_dependency": false,
 
-  "trigger": {
-    "measured_brake_temp_c": 185.6,
-    "brake_temp_rise_rate": 4.6,
-    "brake_health_index": 0.39
-  },
+  "trigger_measured_brake_temp_c": 185.6,
+  "trigger_brake_temp_rise_rate": 4.6,
+  "trigger_brake_health_index": 0.39,
 
-  "decision": {
-    "critical_class": 1,
-    "actuation_triggered": 1
-  },
+  "fog_decision_critical_class": 1,
+  "fog_decision_actuation_triggered": 1,
 
-  "actuation_commands": {
-    "limit_vehicle_speed_kph": 40,
-    "disable_aggressive_braking": true,
-    "enable_brake_cooling_fan": true
-  },
+  "actuation_limit_vehicle_speed_kph": 40,
+  "actuation_disable_aggressive_braking": true,
+  "actuation_enable_brake_cooling_fan": true,
 
-  "confidence": 0.93
+  "decision_confidence": 0.93
 }
 ```
 
@@ -284,32 +278,25 @@ clamp(
   "vehicle_id": "VIT_CAR_001",
   "timestamp_ms": 1707051123456,
 
-  "fog_decision": {
-    "critical_class": 1,
-    "actuation_triggered": 1
-  },
+  "thermal_brake_margin": -0.21,
+  "thermal_engine_margin": 0.34,
+  "thermal_stress_index": 0.82,
 
-  "health_vectors": {
-    "thermal": {
-      "brake_thermal_margin": -0.21,
-      "engine_thermal_margin": 0.34
-    },
-    "mechanical": {
-      "vibration_anomaly_score": 0.77,
-      "dominant_fault_band_hz": 142
-    },
-    "electrical": {
-      "charging_efficiency_score": 0.81
-    }
-  },
+  "mechanical_vibration_anomaly_score": 0.77,
+  "mechanical_dominant_fault_band_hz": 142,
+  "mechanical_vibration_rms": 0.84,
 
-  "rul_estimates": {
-    "engine_rul_pct": 62,
-    "brake_rul_pct": 28,
-    "battery_rul_pct": 74
-  },
+  "electrical_charging_efficiency_score": 0.81,
+  "electrical_battery_health_pct": 87,
+
+  "engine_rul_pct": 62,
+  "brake_rul_pct": 28,
+  "battery_rul_pct": 74,
 
   "vehicle_health_score": 0.64
+
+  "fog_decision_critical_class": 1,
+  "fog_decision_actuation_triggered": 1
 }
 ```
 
@@ -322,48 +309,38 @@ clamp(
   "vehicle_id": "VIT_CAR_001",
   "timestamp_ms": 1707051123456,
 
-  "health_vectors": {
-    "thermal": {
-      "brake_thermal_margin": -0.21,
-      "engine_thermal_margin": 0.34
-    },
-    "mechanical": {
-      "vibration_anomaly_score": 0.77,
-      "dominant_fault_band_hz": 142
-    },
-    "electrical": {
-      "charging_efficiency_score": 0.81,
-      "battery_degradation_trend": "stable"
-    },
-    "usage_behavior": {
-      "driver_aggression_score": 0.58,
-      "stress_amplification_factor": 1.27
-    }
-  },
+  "thermal_brake_margin": -0.21,
+  "thermal_engine_margin": 0.34,
+  "thermal_stress_index": 0.82,
 
-  "rul_estimates": {
-    "engine_rul_pct": 62,
-    "brake_rul_pct": 28,
-    "battery_rul_pct": 74
-  },
+  "mechanical_vibration_anomaly_score": 0.77,
+  "mechanical_dominant_fault_band_hz": 142,
+  "mechanical_vibration_rms": 0.84,
 
-  "fault_inference": {
-    "primary_fault": "BRAKE_THERMAL_SATURATION",
-    "contributing_factors": [
-      "high_brake_temp_rise_rate",
-      "low_brake_pad_remaining",
-      "sustained_vehicle_speed"
-    ],
-    "failure_probability_7d": 0.61
-  },
+  "electrical_charging_efficiency_score": 0.81,
+  "electrical_battery_degradation_trend": "stable",
+
+  "usage_driver_aggression_score": 0.58,
+  "usage_stress_amplification_factor": 1.27,
+
+  "engine_rul_pct": 62,
+  "brake_rul_pct": 28,
+  "battery_rul_pct": 74,
+
+  "fog_decision_critical_class": 1,
+  "fog_decision_actuation_triggered": 1
+
+  "fault_primary": "BRAKE_THERMAL_SATURATION",
+  "fault_contributing_factor_1": "high_brake_temp_rise_rate",
+  "fault_contributing_factor_2": "low_brake_pad_remaining",
+  "fault_contributing_factor_3": "sustained_vehicle_speed",
+  "fault_failure_probability_7d": 0.61,
 
   "vehicle_health_score": 0.64,
 
-  "recommendations": {
-    "service_priority": "high",
-    "suggested_action": "Brake inspection and pad replacement",
-    "safe_operating_limit_km": 120
-  }
+  "recommendation_service_priority": "high",
+  "recommendation_suggested_action": "Brake inspection and pad replacement",
+  "recommendation_safe_operating_limit_km": 120
 }
 ```
 
