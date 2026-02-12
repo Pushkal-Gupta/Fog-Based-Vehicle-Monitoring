@@ -297,6 +297,12 @@ clamp(
 
   "fog_decision_critical_class": 1,
   "fog_decision_actuation_triggered": 1
+
+  "fog_actuation_limit_vehicle_speed_kph": 40,
+  "fog_actuation_disable_aggressive_braking": true,
+  "fog_actuation_enable_brake_cooling_fan": true,
+
+  "fog_decision_confidence": 0.93
 }
 ```
 
@@ -329,6 +335,12 @@ clamp(
 
   "fog_decision_critical_class": 1,
   "fog_decision_actuation_triggered": 1
+
+  "fog_actuation_limit_vehicle_speed_kph": 40,
+  "fog_actuation_disable_aggressive_braking": true,
+  "fog_actuation_enable_brake_cooling_fan": true,
+
+  "fog_decision_confidence": 0.93
 
   "fault_primary": "BRAKE_THERMAL_SATURATION",
   "fault_contributing_factor_1": "high_brake_temp_rise_rate",
