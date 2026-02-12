@@ -85,7 +85,9 @@ The following structured health vector is computed at the fog layer from raw tel
     "brake_temp_c": 185.6,
     "radiator_temp_c": 88.9,
     "brake_temp_rise_rate_c_per_s": 4.6,
-    "thermal_stress_index": 0.82
+    "thermal_stress_index": 0.82,
+    "thermal_brake_margin": -0.21,
+    "thermal_engine_margin": 0.34
   },
 
   "powertrain_state": {
@@ -100,7 +102,8 @@ The following structured health vector is computed at the fog layer from raw tel
     "battery_voltage_v": 12.6,
     "output_voltage_v": 13.9,
     "battery_health_pct": 87,
-    "charging_status": "normal"
+    "charging_status": "normal",
+    "electrical_charging_efficiency_score": 0.81
   },
 
   "braking_state": {
@@ -127,7 +130,8 @@ The following structured health vector is computed at the fog layer from raw tel
       "z": 0.98
     },
     "vibration_rms": 0.84,
-    "dominant_vibration_hz": 142
+    "dominant_vibration_hz": 142,
+    "mechanical_vibration_anomaly_score": 0.77
   },
 
   "environment_state": {
@@ -148,7 +152,14 @@ The following structured health vector is computed at the fog layer from raw tel
 
   "fog_decision": {
     "critical_class": 1,
-    "actuation_triggered": 1
+    "actuation_triggered": 1,
+    "decision_confidence": 0.93
+  },
+
+  "actuation_state": {
+    "actuation_limit_vehicle_speed_kph": 40,
+    "actuation_disable_aggressive_braking": true,
+    "actuation_enable_brake_cooling_fan": true
   }
 }
 ```
@@ -246,7 +257,7 @@ clamp(
 
 ---
 
-## 5. Fog → Hardware Actuation Event
+## 5. Fog → Hardware Actuation Event | Cloud Updated on Actuation Details
 
 ```json
 {
@@ -261,11 +272,11 @@ clamp(
   "fog_decision_critical_class": 1,
   "fog_decision_actuation_triggered": 1,
 
-  "actuation_limit_vehicle_speed_kph": 40,
-  "actuation_disable_aggressive_braking": true,
-  "actuation_enable_brake_cooling_fan": true,
+  "fog_actuation_limit_vehicle_speed_kph": 40,
+  "fog_actuation_disable_aggressive_braking": true,
+  "fog_actuation_enable_brake_cooling_fan": true,
 
-  "decision_confidence": 0.93
+  "fog_decision_confidence": 0.93
 }
 ```
 
@@ -294,15 +305,6 @@ clamp(
   "battery_rul_pct": 74,
 
   "vehicle_health_score": 0.64
-
-  "fog_decision_critical_class": 1,
-  "fog_decision_actuation_triggered": 1
-
-  "fog_actuation_limit_vehicle_speed_kph": 40,
-  "fog_actuation_disable_aggressive_braking": true,
-  "fog_actuation_enable_brake_cooling_fan": true,
-
-  "fog_decision_confidence": 0.93
 }
 ```
 
@@ -335,12 +337,6 @@ clamp(
 
   "fog_decision_critical_class": 1,
   "fog_decision_actuation_triggered": 1
-
-  "fog_actuation_limit_vehicle_speed_kph": 40,
-  "fog_actuation_disable_aggressive_braking": true,
-  "fog_actuation_enable_brake_cooling_fan": true,
-
-  "fog_decision_confidence": 0.93
 
   "fault_primary": "BRAKE_THERMAL_SATURATION",
   "fault_contributing_factor_1": "high_brake_temp_rise_rate",
