@@ -6,3 +6,6 @@ pydantic-settings
 
 motor
 python-dotenv
+
+pytest-asyncio
+httpx

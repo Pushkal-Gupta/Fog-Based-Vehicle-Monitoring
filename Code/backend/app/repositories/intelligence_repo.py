@@ -1,5 +1,5 @@
 from app.core.db import vehicle_edge_state
-from app.models.ingest import IngestPayload
+from app.models.intelligence import IntelligencePayload
 from typing import List, Optional
 import time
 
@@ -52,4 +52,16 @@ class IntelligenceRepo:
 
             return await self._fetch(query, limit)
 
-    
+    async def insert_vehicle_data(self, payload: IntelligencePayload):
+        document = {
+            **payload.model_dump(),
+            "processing_meta": {
+                "ai_processed": False,
+                "processed_at": None,
+                "ai_version": None
+            },
+            "ingested_at": int(time.time() * 1000)
+        }
+
+        result = await vehicle_edge_state.insert_one(document)
+        return str(result.inserted_id)
