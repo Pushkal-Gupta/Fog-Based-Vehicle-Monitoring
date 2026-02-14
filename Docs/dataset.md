@@ -226,33 +226,43 @@ The final score is subject to a penalty based on the **thermal_stress_index**.
 
 ## 4. Critical Decision & Actuation Logic
 
-### 4.1 Critical Condition
+### 4.1 Thermal Protection
 
 ```text
-IF brake_temp_c > 180
-AND brake_temp_rise_rate > 3.0
-AND brake_health_index < 0.4
-→ CRITICAL
+thermal_protection_active = (brake_temp_c > 180)
+  AND (brake_temp_rise_rate_c_per_s > 3.0)
+  AND (brake_health_index < 0.4)
 ```
 
-### 4.2 Confidence Calculation
+### 4.2 Brake Stress Mitigation
 
 ```text
-confidence =
-clamp(
-0.5 * temp_factor +
-0.3 * rise_factor +
-0.2 * (1 - brake_health_index),
-0, 1
-)
+temp_factor = clamp((brake_temp_c - 120) / (200 - 120), 0, 1)
+rise_factor = clamp((brake_temp_rise_rate_c_per_s - 1.0) / (6.0 - 1.0), 0, 1)
+health_factor = 1 - brake_health_index
+brake_stress_confidence = clamp(0.5 * temp_factor + 0.3 * rise_factor + 0.2 * health_factor,0, 1)
+brake_stress_mitigation_active = (brake_stress_confidence > 0.6)
 ```
 
-### 4.3 Immediate Action
+### 4.3 Vibration Damping Mode
 
 ```text
-→ speed_limit = 40
-→ disable aggressive braking
-→ enable cooling
+vibration_risk_score = clamp(0.7 * mechanical_vibration_anomaly_score + 0.3 * (vibration_rms / 1.2),0, 1)
+vibration_damping_mode_active = (vibration_risk_score > 0.65)
+```
+
+### 4.4 Predictive Service Required
+
+```text
+service_risk_score = clamp( 0.6 * (1 - brake_rul_pct / 100) + 0.4 * (1 - vehicle_health_score), 0, 1)
+predictive_service_required = (service_risk_score > 0.55)
+```
+
+### 4.5 Emergency Safeguard
+
+```text
+emergency_risk_score = clamp( 0.4 * thermal_stress_index + 0.3 * vibration_risk_score + 0.3 * (1 - vehicle_health_score),0, 1)
+emergency_safeguard_active = (emergency_risk_score > 0.85)
 ```
 
 ---
@@ -271,12 +281,13 @@ clamp(
 
   "fog_decision_critical_class": 1,
   "fog_decision_actuation_triggered": 1,
-
-  "fog_actuation_limit_vehicle_speed_kph": 40,
-  "fog_actuation_disable_aggressive_braking": true,
-  "fog_actuation_enable_brake_cooling_fan": true,
-
   "fog_decision_confidence": 0.93
+
+  "fog_thermal_protection_active": true,
+  "fog_brake_stress_mitigation_active": true,
+  "fog_vibration_damping_mode_active": true,
+  "fog_predictive_service_required": true,
+  "fog_emergency_safeguard_active": false
 }
 ```
 
