@@ -368,10 +368,8 @@ emergency_safeguard_active = (emergency_risk_score > 0.85)
   "fog_decision_actuation_triggered": 1
 
   "fault_primary": "BRAKE_THERMAL_SATURATION",
-  "fault_contributing_factor_1": "high_brake_temp_rise_rate",
-  "fault_contributing_factor_2": "low_brake_pad_remaining",
-  "fault_contributing_factor_3": "sustained_vehicle_speed",
-  "fault_failure_probability_7d": 0.61,
+  "fault_contributing_factor": ["high_brake_temp_rise_rate","low_brake_pad_remaining","sustained_vehicle_speed"],
+  "fault_failure_probability": 0.61,
 
   "vehicle_health_score": 0.64,
 
