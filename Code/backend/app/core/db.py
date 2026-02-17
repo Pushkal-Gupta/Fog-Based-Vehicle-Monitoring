@@ -10,6 +10,9 @@ vehicle_edge_state = db["vehicle_edge_state"] # fog to cloud data sent before AI
 vehicle_latest_state_collection = db["vehicle_latest_state"] # only store the last recorded state might be used later on.
 vehicle_ai_insights = db["vehicle_ai_insights"] # ai to cloud after processing
 actuation_events = db["actuation_events"]
+users = db["users"]
+vehicles = db["vehicles"]
+ownership_collection = db["vehicle_ownership"]
 
 
 async def ping_server():

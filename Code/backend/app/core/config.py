@@ -6,7 +6,7 @@ class Settings(BaseSettings):
 
     MONGO_URI: str
     MONGO_DB_NAME: str
-
+    ADMIN_SECRET_KEY: str
     class Config:
         env_file = ".env"
 
