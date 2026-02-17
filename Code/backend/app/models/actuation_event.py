@@ -12,9 +12,10 @@ class ActuationEventPayload(BaseModel):
 
     fog_decision_critical_class: int
     fog_decision_actuation_triggered: int
-
-    fog_actuation_limit_vehicle_speed_kph: int
-    fog_actuation_disable_aggressive_braking: bool
-    fog_actuation_enable_brake_cooling_fan: bool
-
     fog_decision_confidence: float
+
+    fog_thermal_protection_active: bool
+    fog_brake_stress_mitigation_active: bool
+    fog_vibration_damping_mode_active: bool
+    fog_predictive_service_required: bool
+    fog_emergency_safeguard_active: bool
