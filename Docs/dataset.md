@@ -267,7 +267,7 @@ emergency_safeguard_active = (emergency_risk_score > 0.85)
 
 ---
 
-## 5. Fog → Hardware Actuation Event | Cloud Updated on Actuation Details
+## 5. Fog → Hardware Actuation Event
 
 ```json
 {
@@ -300,6 +300,10 @@ emergency_safeguard_active = (emergency_risk_score > 0.85)
   "vehicle_id": "VIT_CAR_001",
   "timestamp_ms": 1707051123456,
 
+  "fog_decision_critical_class": 1,
+  "fog_decision_actuation_triggered": 1,
+  "fog_decision_confidence": 0.93
+
   "thermal_brake_margin": -0.21,
   "thermal_engine_margin": 0.34,
   "thermal_stress_index": 0.82,
@@ -316,6 +320,16 @@ emergency_safeguard_active = (emergency_risk_score > 0.85)
   "battery_rul_pct": 74,
 
   "vehicle_health_score": 0.64
+
+  "trigger_measured_brake_temp_c": 185.6,
+  "trigger_brake_temp_rise_rate": 4.6,
+  "trigger_brake_health_index": 0.39,
+
+  "fog_thermal_protection_active": true,
+  "fog_brake_stress_mitigation_active": true,
+  "fog_vibration_damping_mode_active": true,
+  "fog_predictive_service_required": true,
+  "fog_emergency_safeguard_active": false
 }
 ```
 
@@ -327,6 +341,10 @@ emergency_safeguard_active = (emergency_risk_score > 0.85)
 {
   "vehicle_id": "VIT_CAR_001",
   "timestamp_ms": 1707051123456,
+
+  "fog_decision_critical_class": 1,
+  "fog_decision_actuation_triggered": 1,
+  "fog_decision_confidence": 0.93
 
   "thermal_brake_margin": -0.21,
   "thermal_engine_margin": 0.34,
@@ -360,6 +378,16 @@ emergency_safeguard_active = (emergency_risk_score > 0.85)
   "recommendation_service_priority": "high",
   "recommendation_suggested_action": "Brake inspection and pad replacement",
   "recommendation_safe_operating_limit_km": 120
+
+  "trigger_measured_brake_temp_c": 185.6,
+  "trigger_brake_temp_rise_rate": 4.6,
+  "trigger_brake_health_index": 0.39,
+
+  "fog_thermal_protection_active": true,
+  "fog_brake_stress_mitigation_active": true,
+  "fog_vibration_damping_mode_active": true,
+  "fog_predictive_service_required": true,
+  "fog_emergency_safeguard_active": false
 }
 ```
 
