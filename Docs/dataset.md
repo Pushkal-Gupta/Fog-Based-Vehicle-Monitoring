@@ -153,7 +153,23 @@ The following structured health vector is computed at the fog layer from raw tel
   "fog_decision": {
     "critical_class": 1,
     "actuation_triggered": 1,
-    "decision_confidence": 0.93
+    "decision_confidence": 0.93,
+    "decision_origin": "fog_node",
+    "cloud_dependency": false
+  },
+
+  "safety_flags": {
+    "fog_thermal_protection_active": true,
+    "fog_brake_stress_mitigation_active": true,
+    "fog_vibration_damping_mode_active": true,
+    "fog_predictive_service_required": true,
+    "fog_emergency_safeguard_active": false
+  },
+
+  "trigger_source_data": {
+    "trigger_measured_brake_temp_c": 185.6,
+    "trigger_brake_temp_rise_rate": 4.6,
+    "trigger_brake_health_index": 0.39
   },
 
   "actuation_state": {
