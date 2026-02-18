@@ -307,6 +307,13 @@ emergency_safeguard_active = (emergency_risk_score > 0.85)
 }
 ```
 
+| critical | actuation | meaning                       |
+|---------:|----------:|------------------------------|
+| 1        | 0         | warning only                 |
+| 1        | 1         | automatic safety intervention|
+| 0        | 1         | impossible (bug)             |
+| 0        | 0         | normal                       |
+
 ---
 
 ## 6. Fog → Cloud → Dashboard Output
