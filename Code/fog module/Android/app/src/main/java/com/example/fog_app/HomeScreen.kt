@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -18,7 +18,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.fog_app.ui.theme.*
 
 @Composable
 fun HomeScreen(userType: UserType, onTileClick: (String) -> Unit, onLogsClick: () -> Unit) {
@@ -35,6 +37,10 @@ fun UserHomeScreen(onTileClick: (String) -> Unit) {
         "Braking State", "Tires State", "Motion State",
         "Environment State", "Lifecycle State", "Global Health"
     )
+    val tileColors = listOf(
+        TileColor1, TileColor2, TileColor3, TileColor4, TileColor5,
+        TileColor6, TileColor7, TileColor8, TileColor9
+    )
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -43,8 +49,8 @@ fun UserHomeScreen(onTileClick: (String) -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        items(dataCategories) { category ->
-            CategoryTile(category = category, onClick = { onTileClick(category) })
+        itemsIndexed(dataCategories) { index, category ->
+            CategoryTile(category = category, color = tileColors[index % tileColors.size], onClick = { onTileClick(category) })
         }
     }
 }
@@ -59,16 +65,16 @@ fun DeveloperHomeScreen(onLogsClick: () -> Unit) {
 }
 
 @Composable
-fun CategoryTile(category: String, onClick: () -> Unit) {
+fun CategoryTile(category: String, color: Color, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .aspectRatio(1f)
             .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = color)
     ) {
         Box(modifier = Modifier.fillMaxSize().padding(8.dp), contentAlignment = Alignment.Center) {
-            Text(text = category, style = MaterialTheme.typography.titleMedium)
+            Text(text = category, style = MaterialTheme.typography.titleMedium, color = Color.White)
         }
     }
 }

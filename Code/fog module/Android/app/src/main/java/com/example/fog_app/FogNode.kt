@@ -17,7 +17,7 @@ const val MAX_SAMPLES = (WINDOW_SEC / SAMPLE_PERIOD).toInt()
 const val BRAKE_MAX_TEMP = 220.0
 const val MAX_SAFE_RISE = 6.0
 
-const val ESP32_IP = "10.213.19.38"
+const val ESP32_IP = "192.168.219.78"
 const val CLOUD_URL = "https://fog-based-vehicle-monitoring.onrender.com/api/intelligence/insert"
 
 /* ================= UTILS ================= */
@@ -67,7 +67,7 @@ fun aggregate(samples: List<Map<String, Any>>): Map<String, Any> {
         "vehicle_id" to last["vehicle_id"]!!,
         "timestamp_ms" to t1,
 
-        "brake_temp_c" to s("brake_temp_c").max(),
+        "brake_temp_c" to s("brake_temp_c").maxOrNull()!!,
         "brake_temp_rise_rate" to ((samples.last().d("brake_temp_c") - samples.first().d("brake_temp_c")) / dt),
 
         "engine_oil_temp_c" to s("engine_oil_temp_c").mean(),
