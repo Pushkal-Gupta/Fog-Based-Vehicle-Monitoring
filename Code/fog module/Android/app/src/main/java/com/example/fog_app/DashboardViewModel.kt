@@ -3,6 +3,7 @@ package com.example.fog_app
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -11,12 +12,111 @@ class DashboardViewModel : ViewModel() {
 
     private val _vehicleData = MutableStateFlow<VehicleData?>(null)
     val vehicleData: StateFlow<VehicleData?> = _vehicleData
+    private var rawJson: String = ""
+
+    fun getRawJson(): String {
+        return rawJson
+    }
+
+    fun getDataForCategory(category: String): List<Pair<String, Float>> {
+        return when (category) {
+            "Thermal State" -> thermalStateData
+            "Powertrain State" -> powertrainStateData
+            "Electrical State" -> electricalStateData
+            "Braking State" -> brakingStateData
+            "Tires State" -> tiresStateData
+            "Motion State" -> motionStateData
+            "Environment State" -> environmentStateData
+            "Lifecycle State" -> lifecycleStateData
+            "Global Health" -> globalHealthData
+            else -> emptyList()
+        }
+    }
+
+    val thermalStateData: List<Pair<String, Float>>
+        get() = _vehicleData.value?.thermalState?.let {
+            listOf(
+                "Engine Oil" to it.engineOilTempC.toFloat(),
+                "Transmission" to it.transmissionTempC.toFloat(),
+                "Brake" to it.brakeTempC.toFloat(),
+                "Radiator" to it.radiatorTempC.toFloat()
+            )
+        } ?: emptyList()
+
+    val powertrainStateData: List<Pair<String, Float>>
+        get() = _vehicleData.value?.powertrainState?.let {
+            listOf(
+                "Motor RPM" to it.motorRpm.toFloat(),
+                "RPM Variance" to it.engineRpmVariance.toFloat(),
+                "Engine Load" to it.engineLoadPct.toFloat(),
+            )
+        } ?: emptyList()
+
+    val electricalStateData: List<Pair<String, Float>>
+        get() = _vehicleData.value?.electricalState?.let {
+            listOf(
+                "Battery V" to it.batteryVoltageV.toFloat(),
+                "Output V" to it.outputVoltageV.toFloat(),
+                "Battery Health" to it.batteryHealthPct.toFloat(),
+            )
+        } ?: emptyList()
+
+    val brakingStateData: List<Pair<String, Float>>
+        get() = _vehicleData.value?.brakingState?.let {
+            listOf(
+                "Pad Remaining" to it.brakePadRemainingPct.toFloat(),
+                "Disc Score" to it.brakeDiscScore.toFloat(),
+                "Health Index" to it.brakeHealthIndex.toFloat(),
+            )
+        } ?: emptyList()
+
+    val tiresStateData: List<Pair<String, Float>>
+        get() = _vehicleData.value?.tiresState?.pressureKpa?.let {
+            listOf(
+                "FL" to it.fl.toFloat(),
+                "FR" to it.fr.toFloat(),
+                "RL" to it.rl.toFloat(),
+                "RR" to it.rr.toFloat(),
+            )
+        } ?: emptyList()
+
+    val motionStateData: List<Pair<String, Float>>
+        get() = _vehicleData.value?.motionState?.let {
+            listOf(
+                "Speed" to it.vehicleSpeedKmph.toFloat(),
+                "Vibration" to it.vibrationRms.toFloat(),
+            )
+        } ?: emptyList()
+
+    val environmentStateData: List<Pair<String, Float>>
+        get() = _vehicleData.value?.environmentState?.let {
+            listOf(
+                "Pressure" to it.ambientPressureKpa.toFloat(),
+                "Cabin Temp" to it.cabinTempC.toFloat(),
+                "Humidity" to it.cabinHumidityPct.toFloat(),
+            )
+        } ?: emptyList()
+
+    val lifecycleStateData: List<Pair<String, Float>>
+        get() = _vehicleData.value?.lifecycleState?.let {
+            listOf(
+                "Engine RUL" to it.engineRulPct.toFloat(),
+                "Brake RUL" to it.brakeRulPct.toFloat(),
+                "Battery RUL" to it.batteryRulPct.toFloat(),
+            )
+        } ?: emptyList()
+
+    val globalHealthData: List<Pair<String, Float>>
+        get() = _vehicleData.value?.globalHealth?.let {
+            listOf(
+                "Health Score" to it.vehicleHealthScore.toFloat(),
+            )
+        } ?: emptyList()
+
 
     init {
-        // For now, we'll use the sample data provided.
-        // In a real app, you would receive this from your Python service.
         viewModelScope.launch {
-            val sampleJson = """ 
+            rawJson = """
             {
               "meta": {
                 "device_id": "ESP32_VEH_01",
@@ -113,7 +213,9 @@ class DashboardViewModel : ViewModel() {
               }
             }
             """.trimIndent()
-            _vehicleData.value = Gson().fromJson(sampleJson, VehicleData::class.java)
+            val gson = GsonBuilder().setPrettyPrinting().create()
+            val vehicleDataJson = gson.fromJson(rawJson, VehicleData::class.java)
+            _vehicleData.value = vehicleDataJson
         }
     }
 }

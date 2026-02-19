@@ -3,35 +3,28 @@ package com.example.fog_app
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-// import com.chaquo.python.Python
-// import com.chaquo.python.android.AndroidPlatform
 
-class PythonService : Service() {
+class FogNodeService : Service() {
 
     companion object {
-        const val CHANNEL_ID = "PythonServiceChannel"
+        const val CHANNEL_ID = "FogNodeServiceChannel"
     }
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Python Service")
-            .setContentText("Running Python script in the background")
+            .setContentTitle("Fog Node Service")
+            .setContentText("Processing vehicle data in the background")
             .build()
 
         startForeground(1, notification)
 
-        // if (!Python.isStarted()) {
-        //     Python.start(AndroidPlatform(this))
-        // }
-        // val py = Python.getInstance()
-        // py.getModule("fog_node").callAttr("run")
+        main()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -46,7 +39,7 @@ class PythonService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val serviceChannel = NotificationChannel(
                 CHANNEL_ID,
-                "Python Service Channel",
+                "Fog Node Service Channel",
                 NotificationManager.IMPORTANCE_DEFAULT
             )
             val manager = getSystemService(NotificationManager::class.java)
