@@ -10,14 +10,14 @@ import com.fasterxml.jackson.module.kotlin.readValue
 
 /* ================= CONFIG ================= */
 
-const val SAMPLE_PERIOD = 0.025
+const val SAMPLE_PERIOD = 0.5
 const val WINDOW_SEC = 1.0
 const val MAX_SAMPLES = (WINDOW_SEC / SAMPLE_PERIOD).toInt()
 
 const val BRAKE_MAX_TEMP = 220.0
 const val MAX_SAFE_RISE = 6.0
 
-const val ESP32_IP = "192.168.219.78"
+const val ESP32_IP = "192.168.213.78"
 const val CLOUD_URL = "https://fog-based-vehicle-monitoring.onrender.com/api/intelligence/insert"
 
 /* ================= UTILS ================= */
@@ -188,12 +188,44 @@ fun buildCloudPacket(d: Map<String, Any>, h: Map<String, Any>): Map<String, Any>
 val client = OkHttpClient()
 val mapper = jacksonObjectMapper()
 
-fun getDataFromESP32(): Map<String, Any>? =
-    try { mapper.readValue(client.newCall(Request.Builder().url("http://$ESP32_IP/data").build()).execute().body!!.string()) }
-    catch(_:Exception){ null }
+//fun getDataFromESP32(): Map<String, Any>? =
+//    try { mapper.readValue(client.newCall(Request.Builder().url("http://$ESP32_IP/next").build()).execute().body!!.string()) }
+//    catch(_:Exception){ null }
 
+fun getDataFromESP32(): Map<String, Any>? {
+    return try {
+
+        val response = client.newCall(
+            Request.Builder()
+                .url("http://$ESP32_IP/next")
+                .build()
+        ).execute()
+
+        val code = response.code
+        val body = response.body?.string()
+
+        println("------ ESP32 POLL ------")
+        println("HTTP: $code")
+        println("BODY: $body")
+        println("------------------------")
+
+        if (code != 200 || body == null || body.isBlank()) {
+            println("ESP32 DID NOT SEND VALID DATA")
+            return null
+        }
+
+        val parsed: Map<String, Any> = mapper.readValue(body)
+        println("ESP32 DATA PARSED OK")
+
+        parsed
+
+    } catch (e: Exception) {
+        println("ESP32 UNREACHABLE: ${e.message}")
+        null
+    }
+}
 fun sendToESP32(pkt: Map<String, Any>) =
-    try { client.newCall(Request.Builder().url("http://$ESP32_IP/actuate").put(RequestBody.create("application/json".toMediaType(),mapper.writeValueAsString(pkt))).build()).execute() }
+    try { client.newCall(Request.Builder().url("http://$ESP32_IP/flags").put(RequestBody.create("application/json".toMediaType(),mapper.writeValueAsString(pkt))).build()).execute() }
     catch(_:Exception){}
 
 fun sendToBackend(pkt: Map<String, Any>) =

@@ -14,6 +14,7 @@ import com.example.fog_app.ui.theme.Fog_AppTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        com.example.fog_app.main()
         setContent {
             Fog_AppTheme {
                 val navController = rememberNavController()
