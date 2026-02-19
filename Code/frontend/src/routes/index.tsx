@@ -1,10 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ComponentExample } from "@/components/component-example";
+
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({ component: App });
 
 function App() {
   return (
-    <h1 className="text-center text-5xl p-10">Hello World.</h1>
+    <div>
+      <h1 className="text-center text-5xl p-10">Hello World.</h1>
+      <Button variant={"destructive"}>Click me !!</Button>
+    </div>
+    
   );
 }
