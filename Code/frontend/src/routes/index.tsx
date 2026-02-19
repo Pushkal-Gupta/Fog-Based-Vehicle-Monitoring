@@ -4,7 +4,7 @@ import { ComponentExample } from "@/components/component-example";
 export const Route = createFileRoute("/")({ component: App });
 
 function App() {
-return (
-  <ComponentExample />
-);
+  return (
+    <h1 className="text-center text-5xl p-10">Hello World.</h1>
+  );
 }
