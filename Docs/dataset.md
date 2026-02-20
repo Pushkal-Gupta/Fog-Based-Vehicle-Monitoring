@@ -13,56 +13,53 @@ The following JSON represents the **raw telemetry data** received directly from 
   "device_id": "ESP32_VEH_01",
   "vehicle_id": "VIT_CAR_001",
   "timestamp_ms": 1707051123456,
-
+  
   "engine_oil_temp_c": 92.4,
   "transmission_temp_c": 78.1,
   "brake_temp_c": 185.6,
   "radiator_temp_c": 88.9,
-
+  
   "motor_rpm": 3120,
-
+  
+  "vehicle_speed_kmph": 72.4,
+  "fuel_efficiency_kmpl": 14.6,
+  
   "battery_voltage_v": 12.6,
   "battery_health_pct": 87,
-
+  
   "fuel_level_pct": 42,
-
+  
   "cabin_humidity_pct": 54.2,
   "cabin_temp_c": 31.5,
-
+  
   "tire_pressure_fl_kpa": 230,
   "tire_pressure_fr_kpa": 228,
   "tire_pressure_rl_kpa": 225,
   "tire_pressure_rr_kpa": 227,
-
+  
   "gyro_x_dps": 0.12,
   "gyro_y_dps": -0.04,
   "gyro_z_dps": 0.98,
-
+  
   "ambient_pressure_kpa": 101.3,
-
+  
   "output_voltage_v": 13.9,
-
+  
   "engine_rpm_variance": 182.4,
   "brake_temp_rise_rate": 4.6,
   "vibration_rms": 0.84,
   "dominant_vibration_hz": 142,
-
+  
   "engine_knock_prob": 0.12,
   "engine_misfire_index": 0.04,
   "engine_load_pct": 68,
-
+  
   "brake_pad_remaining_pct": 34,
   "brake_disc_score": 0.71,
-
-  "driver_aggression_score": 0.58,
-
+  
   "engine_rul_pct": 62,
   "brake_rul_pct": 28,
   "battery_rul_pct": 74,
-
-  "vehicle_health_score": 0.64,
-
-  "alert_level": "critical",
 }
 ```
 
@@ -79,7 +76,7 @@ The following structured health vector is computed at the fog layer from raw tel
     "vehicle_id": "VIT_CAR_001",
     "timestamp_ms": 1707051123456,
     "processing_node": "vehicular_fog",
-    "schema_version": "v1.1"
+    "schema_version": "v1.2"
   },
 
   "thermal_state": {
@@ -88,7 +85,9 @@ The following structured health vector is computed at the fog layer from raw tel
     "brake_temp_c": 185.6,
     "radiator_temp_c": 88.9,
     "brake_temp_rise_rate_c_per_s": 4.6,
-    "thermal_stress_index": 0.82
+    "thermal_stress_index": 0.82,
+    "thermal_brake_margin": -0.21,
+    "thermal_engine_margin": 0.34
   },
 
   "powertrain_state": {
@@ -102,7 +101,9 @@ The following structured health vector is computed at the fog layer from raw tel
   "electrical_state": {
     "battery_voltage_v": 12.6,
     "output_voltage_v": 13.9,
-    "battery_health_pct": 87
+    "battery_health_pct": 87,
+    "charging_status": "normal",
+    "electrical_charging_efficiency_score": 0.81
   },
 
   "braking_state": {
@@ -122,23 +123,21 @@ The following structured health vector is computed at the fog layer from raw tel
   },
 
   "motion_state": {
+    "vehicle_speed_kmph": 72.4,
     "gyro_dps": {
       "x": 0.12,
       "y": -0.04,
       "z": 0.98
     },
     "vibration_rms": 0.84,
-    "dominant_vibration_hz": 142
+    "dominant_vibration_hz": 142,
+    "mechanical_vibration_anomaly_score": 0.77
   },
 
   "environment_state": {
     "ambient_pressure_kpa": 101.3,
     "cabin_temp_c": 31.5,
     "cabin_humidity_pct": 54.2
-  },
-
-  "driver_state": {
-    "driver_aggression_score": 0.58
   },
 
   "lifecycle_state": {
@@ -153,7 +152,30 @@ The following structured health vector is computed at the fog layer from raw tel
 
   "fog_decision": {
     "critical_class": 1,
-    "actuation_triggered": 1
+    "actuation_triggered": 1,
+    "decision_confidence": 0.93,
+    "decision_origin": "fog_node",
+    "cloud_dependency": false
+  },
+
+  "safety_flags": {
+    "fog_thermal_protection_active": true,
+    "fog_brake_stress_mitigation_active": true,
+    "fog_vibration_damping_mode_active": true,
+    "fog_predictive_service_required": true,
+    "fog_emergency_safeguard_active": false
+  },
+
+  "trigger_source_data": {
+    "trigger_measured_brake_temp_c": 185.6,
+    "trigger_brake_temp_rise_rate": 4.6,
+    "trigger_brake_health_index": 0.39
+  },
+
+  "actuation_state": {
+    "actuation_limit_vehicle_speed_kph": 40,
+    "actuation_disable_aggressive_braking": true,
+    "actuation_enable_brake_cooling_fan": true
   }
 }
 ```
@@ -220,33 +242,43 @@ The final score is subject to a penalty based on the **thermal_stress_index**.
 
 ## 4. Critical Decision & Actuation Logic
 
-### 4.1 Critical Condition
+### 4.1 Thermal Protection
 
 ```text
-IF brake_temp_c > 180
-AND brake_temp_rise_rate > 3.0
-AND brake_health_index < 0.4
-→ CRITICAL
+thermal_protection_active = (brake_temp_c > 180)
+  AND (brake_temp_rise_rate_c_per_s > 3.0)
+  AND (brake_health_index < 0.4)
 ```
 
-### 4.2 Confidence Calculation
+### 4.2 Brake Stress Mitigation
 
 ```text
-confidence =
-clamp(
-0.5 * temp_factor +
-0.3 * rise_factor +
-0.2 * (1 - brake_health_index),
-0, 1
-)
+temp_factor = clamp((brake_temp_c - 120) / (200 - 120), 0, 1)
+rise_factor = clamp((brake_temp_rise_rate_c_per_s - 1.0) / (6.0 - 1.0), 0, 1)
+health_factor = 1 - brake_health_index
+brake_stress_confidence = clamp(0.5 * temp_factor + 0.3 * rise_factor + 0.2 * health_factor,0, 1)
+brake_stress_mitigation_active = (brake_stress_confidence > 0.6)
 ```
 
-### 4.3 Immediate Action
+### 4.3 Vibration Damping Mode
 
 ```text
-→ speed_limit = 40
-→ disable aggressive braking
-→ enable cooling
+vibration_risk_score = clamp(0.7 * mechanical_vibration_anomaly_score + 0.3 * (vibration_rms / 1.2),0, 1)
+vibration_damping_mode_active = (vibration_risk_score > 0.65)
+```
+
+### 4.4 Predictive Service Required
+
+```text
+service_risk_score = clamp( 0.6 * (1 - brake_rul_pct / 100) + 0.4 * (1 - vehicle_health_score), 0, 1)
+predictive_service_required = (service_risk_score > 0.55)
+```
+
+### 4.5 Emergency Safeguard
+
+```text
+emergency_risk_score = clamp( 0.4 * thermal_stress_index + 0.3 * vibration_risk_score + 0.3 * (1 - vehicle_health_score),0, 1)
+emergency_safeguard_active = (emergency_risk_score > 0.85)
 ```
 
 ---
@@ -259,26 +291,28 @@ clamp(
   "decision_origin": "fog_node",
   "cloud_dependency": false,
 
-  "trigger": {
-    "measured_brake_temp_c": 185.6,
-    "brake_temp_rise_rate": 4.6,
-    "threshold_exceeded": 1
-  },
+  "trigger_measured_brake_temp_c": 185.6,
+  "trigger_brake_temp_rise_rate": 4.6,
+  "trigger_brake_health_index": 0.39,
 
-  "decision": {
-    "critical_class": 1,
-    "actuation_triggered": 1
-  },
+  "fog_decision_critical_class": 1,
+  "fog_decision_actuation_triggered": 1,
+  "fog_decision_confidence": 0.93
 
-  "actuation_commands": {
-    "limit_vehicle_speed_kph": 40,
-    "disable_aggressive_braking": true,
-    "enable_brake_cooling_fan": true
-  },
-
-  "confidence": 0.93
+  "fog_thermal_protection_active": true,
+  "fog_brake_stress_mitigation_active": true,
+  "fog_vibration_damping_mode_active": true,
+  "fog_predictive_service_required": true,
+  "fog_emergency_safeguard_active": false
 }
 ```
+
+| critical | actuation | meaning                       |
+|---------:|----------:|------------------------------|
+| 1        | 0         | warning only                 |
+| 1        | 1         | automatic safety intervention|
+| 0        | 1         | impossible (bug)             |
+| 0        | 0         | normal                       |
 
 ---
 
@@ -289,36 +323,36 @@ clamp(
   "vehicle_id": "VIT_CAR_001",
   "timestamp_ms": 1707051123456,
 
-  "fog_decision": {
-    "critical_class": 1,
-    "actuation_triggered": 1
-  },
+  "fog_decision_critical_class": 1,
+  "fog_decision_actuation_triggered": 1,
+  "fog_decision_confidence": 0.93
 
-  "health_vectors": {
-    "thermal": {
-      "brake_thermal_margin": -0.21,
-      "engine_thermal_margin": 0.34
-    },
-    "mechanical": {
-      "vibration_anomaly_score": 0.77,
-      "dominant_fault_band_hz": 142
-    },
-    "electrical": {
-      "charging_efficiency_score": 0.81
-    },
-    "usage_behavior": {
-      "driver_aggression_score": 0.58,
-      "stress_amplification_factor": 1.27
-    }
-  },
+  "thermal_brake_margin": -0.21,
+  "thermal_engine_margin": 0.34,
+  "thermal_stress_index": 0.82,
 
-  "rul_estimates": {
-    "engine_rul_pct": 62,
-    "brake_rul_pct": 28,
-    "battery_rul_pct": 74
-  },
+  "mechanical_vibration_anomaly_score": 0.77,
+  "mechanical_dominant_fault_band_hz": 142,
+  "mechanical_vibration_rms": 0.84,
+
+  "electrical_charging_efficiency_score": 0.81,
+  "electrical_battery_health_pct": 87,
+
+  "engine_rul_pct": 62,
+  "brake_rul_pct": 28,
+  "battery_rul_pct": 74,
 
   "vehicle_health_score": 0.64
+
+  "trigger_measured_brake_temp_c": 185.6,
+  "trigger_brake_temp_rise_rate": 4.6,
+  "trigger_brake_health_index": 0.39,
+
+  "fog_thermal_protection_active": true,
+  "fog_brake_stress_mitigation_active": true,
+  "fog_vibration_damping_mode_active": true,
+  "fog_predictive_service_required": true,
+  "fog_emergency_safeguard_active": false
 }
 ```
 
@@ -331,48 +365,50 @@ clamp(
   "vehicle_id": "VIT_CAR_001",
   "timestamp_ms": 1707051123456,
 
-  "health_vectors": {
-    "thermal": {
-      "brake_thermal_margin": -0.21,
-      "engine_thermal_margin": 0.34
-    },
-    "mechanical": {
-      "vibration_anomaly_score": 0.77,
-      "dominant_fault_band_hz": 142
-    },
-    "electrical": {
-      "charging_efficiency_score": 0.81,
-      "battery_degradation_trend": "stable"
-    },
-    "usage_behavior": {
-      "driver_aggression_score": 0.58,
-      "stress_amplification_factor": 1.27
-    }
-  },
+  "fog_decision_critical_class": 1,
+  "fog_decision_actuation_triggered": 1,
+  "fog_decision_confidence": 0.93
 
-  "rul_estimates": {
-    "engine_rul_pct": 62,
-    "brake_rul_pct": 28,
-    "battery_rul_pct": 74
-  },
+  "thermal_brake_margin": -0.21,
+  "thermal_engine_margin": 0.34,
+  "thermal_stress_index": 0.82,
 
-  "fault_inference": {
-    "primary_fault": "BRAKE_THERMAL_SATURATION",
-    "contributing_factors": [
-      "high_brake_temp_rise_rate",
-      "low_brake_pad_remaining",
-      "moderate_driver_aggression"
-    ],
-    "failure_probability_7d": 0.61
-  },
+  "mechanical_vibration_anomaly_score": 0.77,
+  "mechanical_dominant_fault_band_hz": 142,
+  "mechanical_vibration_rms": 0.84,
+
+  "electrical_charging_efficiency_score": 0.81,
+  "electrical_battery_degradation_trend": "stable",
+
+  "usage_driver_aggression_score": 0.58,
+  "usage_stress_amplification_factor": 1.27,
+
+  "engine_rul_pct": 62,
+  "brake_rul_pct": 28,
+  "battery_rul_pct": 74,
+
+  "fog_decision_critical_class": 1,
+  "fog_decision_actuation_triggered": 1
+
+  "fault_primary": "BRAKE_THERMAL_SATURATION",
+  "fault_contributing_factor": ["high_brake_temp_rise_rate","low_brake_pad_remaining","sustained_vehicle_speed"],
+  "fault_failure_probability": 0.61,
 
   "vehicle_health_score": 0.64,
 
-  "recommendations": {
-    "service_priority": "high",
-    "suggested_action": "Brake inspection and pad replacement",
-    "safe_operating_limit_km": 120
-  }
+  "recommendation_service_priority": "high",
+  "recommendation_suggested_action": "Brake inspection and pad replacement",
+  "recommendation_safe_operating_limit_km": 120
+
+  "trigger_measured_brake_temp_c": 185.6,
+  "trigger_brake_temp_rise_rate": 4.6,
+  "trigger_brake_health_index": 0.39,
+
+  "fog_thermal_protection_active": true,
+  "fog_brake_stress_mitigation_active": true,
+  "fog_vibration_damping_mode_active": true,
+  "fog_predictive_service_required": true,
+  "fog_emergency_safeguard_active": false
 }
 ```
 
