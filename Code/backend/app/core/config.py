@@ -6,7 +6,8 @@ class Settings(BaseSettings):
 
     MONGO_URI: str
     MONGO_DB_NAME: str
-
+    ADMIN_SECRET_KEY: str
+    FIREBASE: str
     class Config:
         env_file = ".env"
 

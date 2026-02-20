@@ -1,67 +1,51 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List
 
 
+class AIInsightPayload(BaseModel):
+    source_id: str = Field(...)
 
+    vehicle_id: str
+    timestamp_ms: int
 
-class ThermalInsights(BaseModel):
-    brake_thermal_margin: float
-    engine_thermal_margin: float
+    fog_decision_critical_class: int
+    fog_decision_actuation_triggered: int
+    fog_decision_confidence: float
 
+    thermal_brake_margin: float
+    thermal_engine_margin: float
+    thermal_stress_index: float
 
-class MechanicalInsights(BaseModel):
-    vibration_anomaly_score: float
-    dominant_fault_band_hz: int
+    mechanical_vibration_anomaly_score: float
+    mechanical_dominant_fault_band_hz: int
+    mechanical_vibration_rms: float
 
+    electrical_charging_efficiency_score: float
+    electrical_battery_degradation_trend: str
 
-class ElectricalInsights(BaseModel):
-    charging_efficiency_score: float
-    battery_degradation_trend: str
+    usage_driver_aggression_score: float
+    usage_stress_amplification_factor: float
 
-
-class UsageBehaviorInsights(BaseModel):
-    driver_aggression_score: float
-    stress_amplification_factor: float
-
-
-class HealthVectors(BaseModel):
-    thermal: ThermalInsights
-    mechanical: MechanicalInsights
-    electrical: ElectricalInsights
-    usage_behavior: UsageBehaviorInsights
-
-
-
-class RulEstimates(BaseModel):
     engine_rul_pct: int
     brake_rul_pct: int
     battery_rul_pct: int
 
-
-
-
-class FaultInference(BaseModel):
-    primary_fault: str
-    contributing_factors: List[str]
-    failure_probability_7d: float
-
-
-
-class Recommendations(BaseModel):
-    service_priority: str
-    suggested_action: str
-    safe_operating_limit_km: int
-
-
-
-class AIInsightPayload(BaseModel):
-    source_id: str = Field(..., description="Mongo _id of raw edge document")
-    vehicle_id: str
-    timestamp_ms: int
-
-    health_vectors: HealthVectors
-    rul_estimates: RulEstimates
-    fault_inference: FaultInference
+    fault_primary: str
+    fault_contributing_factor: List[str]
+    fault_failure_probability: float
 
     vehicle_health_score: float
-    recommendations: Recommendations
+
+    recommendation_service_priority: str
+    recommendation_suggested_action: str
+    recommendation_safe_operating_limit_km: int
+
+    trigger_measured_brake_temp_c: float
+    trigger_brake_temp_rise_rate: float
+    trigger_brake_health_index: float
+
+    fog_thermal_protection_active: bool
+    fog_brake_stress_mitigation_active: bool
+    fog_vibration_damping_mode_active: bool
+    fog_predictive_service_required: bool
+    fog_emergency_safeguard_active: bool

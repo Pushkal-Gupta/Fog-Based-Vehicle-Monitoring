@@ -6,3 +6,8 @@ pydantic-settings
 
 motor
 python-dotenv
+
+pytest-asyncio
+httpx
+firebase-admin
+pydantic[email]

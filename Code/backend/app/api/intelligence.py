@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import status, APIRouter, Query, HTTPException
 from typing import Optional
 from app.repositories.intelligence_repo import IntelligenceRepo
-
-router = APIRouter()
+from app.models.intelligence import IntelligencePayload 
+router = APIRouter(prefix="/intelligence", tags=["intelligence"])
 repo = IntelligenceRepo()
 
 
@@ -39,3 +39,12 @@ async def get_all_vehicle_data(
             status_code=500,
             detail=f"Failed to fetch vehicle data: {str(e)}"
         )
+
+@router.post("/insert", status_code=status.HTTP_201_CREATED)
+async def ingest_vehicle_data(payload: IntelligencePayload):
+    try:
+        inserted_id = await repo.insert_vehicle_data(payload)
+        return {"inserted_id": str(inserted_id)}
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to store vehicle data")
+    
