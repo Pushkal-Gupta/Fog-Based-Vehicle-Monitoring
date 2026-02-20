@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -42,15 +43,17 @@ fun UserHomeScreen(onTileClick: (String) -> Unit) {
         TileColor6, TileColor7, TileColor8, TileColor9
     )
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.fillMaxSize()
-    ) {
-        itemsIndexed(dataCategories) { index, category ->
-            CategoryTile(category = category, color = tileColors[index % tileColors.size], onClick = { onTileClick(category) })
+    Surface(color = Color.Black, modifier = Modifier.fillMaxSize()) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            itemsIndexed(dataCategories) { index, category ->
+                CategoryTile(category = category, color = tileColors[index % tileColors.size], onClick = { onTileClick(category) })
+            }
         }
     }
 }

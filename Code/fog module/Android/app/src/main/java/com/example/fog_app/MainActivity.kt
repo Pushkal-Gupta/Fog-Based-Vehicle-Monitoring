@@ -1,5 +1,7 @@
 package com.example.fog_app
 
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,14 +16,26 @@ import com.example.fog_app.ui.theme.Fog_AppTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        com.example.fog_app.main()
+        
+        Intent(this, FogNodeService::class.java).also { intent ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+        }
+
         setContent {
             Fog_AppTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "login") {
                     composable("login") {
                         LoginScreen(onLogin = {
-                            navController.navigate("home/${it.name}")
+                            if (it == UserType.DEVELOPER) {
+                                navController.navigate("logs")
+                            } else {
+                                navController.navigate("home/${it.name}")
+                            }
                         })
                     }
                     composable(
