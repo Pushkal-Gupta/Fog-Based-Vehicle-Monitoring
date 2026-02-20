@@ -10,3 +10,4 @@ python-dotenv
 pytest-asyncio
 httpx
 firebase-admin
+pydantic[email]

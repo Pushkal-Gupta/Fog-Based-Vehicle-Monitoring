@@ -2,6 +2,9 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.server_api import ServerApi
 from app.core.config import settings
+from uvicorn import server
+
+
 
 uri = settings.MONGO_URI
 client = AsyncIOMotorClient(uri, server_api=ServerApi('1'))
@@ -18,7 +21,7 @@ ownership_collection = db["vehicle_ownership"]
 async def ping_server():
     try:
         await client.admin.command('ping')
-        print("You successfully connected to MongoDB!")
+        server.logger.info("You successfully connected to MongoDB!")
     except Exception as e:
         print(e)
       

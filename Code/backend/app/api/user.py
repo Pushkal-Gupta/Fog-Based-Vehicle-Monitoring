@@ -45,3 +45,21 @@ async def create_user(
         full_name=full_name,
         created_at=user_doc["created_at"]
     )
+
+@router.get("/me", response_model=UserModel)
+async def get_user(
+    user=Depends(get_current_user)
+):
+    uid = user["uid"]
+
+    existing = await users_collection.find_one({"_id": uid})
+
+    if not existing:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return UserModel(
+        uid=existing["_id"],
+        email=existing["email"],
+        full_name=existing["full_name"],
+        created_at=existing["created_at"]
+    )
