@@ -1,19 +1,9 @@
 import { SignupForm } from '@/components/signup-form'
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { auth } from '@/lib/firebase'
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Car } from 'lucide-react'
 
 export const Route = createFileRoute('/signup')({
-  beforeLoad: async () => {
-    const user = auth.currentUser
-
-    // If already logged in → redirect to home
-    if (user) {
-      throw redirect({
-        to: '/',
-      })
-    }
-  },
   component: SignUpPage,
 })
 

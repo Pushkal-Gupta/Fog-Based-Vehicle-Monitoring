@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { auth } from '@/lib/firebase'
 
 export const Route = createFileRoute('/_authenticated')({
@@ -14,6 +14,7 @@ export const Route = createFileRoute('/_authenticated')({
   },
   component: AuthenticatedLayout,
 })
+
 
 function AuthenticatedLayout() {
   return <Outlet />

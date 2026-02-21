@@ -1,19 +1,13 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { auth } from '@/lib/firebase'
+
+"use client"
+
+import { createFileRoute } from '@tanstack/react-router'
+
 import { LoginForm } from '@/components/login-form'
 import { Car } from "lucide-react"
 
 export const Route = createFileRoute('/login')({
-  beforeLoad: async () => {
-    const user = auth.currentUser
-
-    // If already logged in → redirect to home
-    if (user) {
-      throw redirect({
-        to: '/',
-      })
-    }
-  },
+  
   component: LoginPage,
 })
 
