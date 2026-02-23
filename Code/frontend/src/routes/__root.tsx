@@ -4,9 +4,10 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { AuthProvider } from "@/context/AuthContext"
 import appCss from '../styles.css?url'
 import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
 export const Route = createRootRoute({
-  
- 
+
+
   head: () => ({
     meta: [
       {
@@ -33,13 +34,14 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
       <body>
         <AuthProvider>
-          {children}
+          <TooltipProvider> {children}</TooltipProvider>
+
           <Toaster />
         </AuthProvider>
 
