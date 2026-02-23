@@ -190,30 +190,141 @@ fun buildActuationPacket(d: Map<String, Any>, h: Map<String, Any>) = mapOf(
 
 fun buildCloudPacket(d: Map<String, Any>, h: Map<String, Any>): Map<String, Any> {
 
-    val brakeMargin = clamp((BRAKE_MAX_TEMP - d.d("brake_temp_c")) / BRAKE_MAX_TEMP)
-    val engineMargin = clamp((140 - d.d("engine_oil_temp_c")) / 140)
+    val brakeTemp = d.d("brake_temp_c")
+    val riseRate = d.d("brake_temp_rise_rate")
+    val padPct = d.d("brake_pad_remaining_pct")
+    val discScore = d.d("brake_disc_score")
+    val motorRpm = d.d("motor_rpm")
+    val dominantHz = d.d("dominant_vibration_hz")
+    val vibrationRms = d.d("vibration_rms")
+    val anomaly = d.d("vibration_anomaly")
+    val batteryHealth = d.d("battery_health_pct")
+    val outV = d.d("output_voltage_v")
+    val battV = d.d("battery_voltage_v")
+
+    val engineRul = d.d("engine_rul_pct")
+    val brakeRul = d.d("brake_rul_pct")
+    val batteryRul = d.d("battery_rul_pct")
+
+    /* ---------------- Thermal Stress ---------------- */
+
+    val normalizedTemp = brakeTemp / 220.0
+    val normalizedRise = riseRate / 8.0
+
+    val thermalStress = clamp(0.7 * normalizedTemp + 0.3 * normalizedRise)
+
+    /* ---------------- Brake Health ---------------- */
+
+    val padFactor = padPct / 100.0
+    val brakeHealth = clamp(0.6 * padFactor + 0.4 * discScore)
+
+    /* ---------------- Charging Efficiency ---------------- */
+
     val chargingEfficiency =
-        if (d.d("battery_voltage_v") == 0.0) 0.0
-        else clamp(d.d("output_voltage_v") / d.d("battery_voltage_v"))
+        if (outV in 13.5..14.4 && battV > 12.2) 1.0 else 0.5
 
-    val expectedBand = if (d.d("motor_rpm") == 0.0) 1.0 else d.d("motor_rpm") / 60
-    val vibrationRatio = d.d("dominant_vibration_hz") / expectedBand
-    val vibrationAnomaly = clamp(abs(vibrationRatio - round(vibrationRatio)))
+    /* ---------------- Vibration ---------------- */
 
-    return mapOf(
-        "vehicle_id" to d["vehicle_id"]!!,
-        "timestamp_ms" to d["timestamp_ms"]!!,
-        "thermal_brake_margin" to brakeMargin,
-        "thermal_engine_margin" to engineMargin,
-        "thermal_stress_index" to h["thermal_stress"]!!,
-        "mechanical_vibration_anomaly_score" to vibrationAnomaly,
-        "mechanical_dominant_fault_band_hz" to d["dominant_vibration_hz"]!!,
-        "mechanical_vibration_rms" to d["vibration_rms"]!!,
-        "electrical_charging_efficiency_score" to chargingEfficiency,
-        "electrical_battery_health_pct" to d["battery_health_pct"]!!,
-        "vehicle_health_score" to h["vehicle_health"]!!
+    val expectedBand = if (motorRpm == 0.0) 1.0 else motorRpm / 60.0
+    val vibrationRatio = dominantHz / expectedBand
+
+    val vibrationRisk = clamp(
+        0.7 * anomaly + 0.3 * (vibrationRms / 1.2)
     )
 
+    /* ---------------- Vehicle Health ---------------- */
+
+    var vehicleHealth =
+        0.35 * (engineRul / 100.0) +
+        0.45 * (brakeRul / 100.0) +
+        0.20 * (batteryRul / 100.0)
+
+    vehicleHealth *= (1 - 0.25 * thermalStress) // penalty
+
+    /* ---------------- Decisions ---------------- */
+
+    val thermalProtection =
+        brakeTemp > 180 &&
+        riseRate > 3.0 &&
+        brakeHealth < 0.4
+
+    val tempFactor = clamp((brakeTemp - 120) / 80.0)
+    val riseFactor = clamp((riseRate - 1.0) / 5.0)
+    val healthFactor = 1 - brakeHealth
+
+    val brakeStressConfidence =
+        clamp(0.5 * tempFactor + 0.3 * riseFactor + 0.2 * healthFactor)
+
+    val brakeMitigation = brakeStressConfidence > 0.6
+
+    val vibrationDamping = vibrationRisk > 0.65
+
+    val serviceRisk =
+        clamp(0.6 * (1 - brakeRul / 100.0) + 0.4 * (1 - vehicleHealth))
+
+    val predictiveService = serviceRisk > 0.55
+
+    val emergencyRisk =
+        clamp(0.4 * thermalStress + 0.3 * vibrationRisk + 0.3 * (1 - vehicleHealth))
+
+    val emergency = emergencyRisk > 0.85
+
+    /* ---------------- Critical Classification ---------------- */
+
+    val criticalClass =
+        when {
+            emergency -> 3
+            thermalProtection || vibrationDamping -> 2
+            predictiveService -> 1
+            else -> 0
+        }
+
+    val actuationTriggered = criticalClass >= 2
+
+    val confidence =
+        clamp(
+            0.4 * thermalStress +
+            0.3 * vibrationRisk +
+            0.3 * (1 - vehicleHealth)
+        )
+
+    /* ---------------- Final Payload ---------------- */
+
+    return mapOf(
+        "vehicle_id" to d.s("vehicle_id"),
+        "timestamp_ms" to d.l("timestamp_ms"),
+
+        "fog_decision_critical_class" to criticalClass,
+        "fog_decision_actuation_triggered" to if (actuationTriggered) 1 else 0,
+        "fog_decision_confidence" to confidence,
+
+        "thermal_brake_margin" to (1 - normalizedTemp),
+        "thermal_engine_margin" to (1 - thermalStress),
+        "thermal_stress_index" to thermalStress,
+
+        "mechanical_vibration_anomaly_score" to anomaly,
+        "mechanical_dominant_fault_band_hz" to dominantHz,
+        "mechanical_vibration_rms" to vibrationRms,
+
+        "electrical_charging_efficiency_score" to chargingEfficiency,
+        "electrical_battery_health_pct" to batteryHealth,
+
+        "engine_rul_pct" to engineRul,
+        "brake_rul_pct" to brakeRul,
+        "battery_rul_pct" to batteryRul,
+
+        "vehicle_health_score" to vehicleHealth,
+
+        "trigger_measured_brake_temp_c" to brakeTemp,
+        "trigger_brake_temp_rise_rate" to riseRate,
+        "trigger_brake_health_index" to brakeHealth,
+
+        "fog_thermal_protection_active" to thermalProtection,
+        "fog_brake_stress_mitigation_active" to brakeMitigation,
+        "fog_vibration_damping_mode_active" to vibrationDamping,
+        "fog_predictive_service_required" to predictiveService,
+        "fog_emergency_safeguard_active" to emergency
+    )
 }
 
 
