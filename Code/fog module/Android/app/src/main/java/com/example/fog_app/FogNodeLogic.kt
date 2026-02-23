@@ -224,10 +224,25 @@ val mapper = jacksonObjectMapper()
 
 fun getDataFromESP32(ip: String): Map<String, Any>? {
     return try {
-        client.newCall(Request.Builder().url("http://$ip/next").build()).execute().use {
-            mapper.readValue(it.body!!.string())
+        println("Fetching data from ESP32")
+
+        client.newCall(Request.Builder().url("http://$ip/next").build()).execute().use { response ->
+
+            val bodyString = response.body?.string()
+
+            if (bodyString == null) {
+                println("Response body is null")
+                return null
+            }
+
+            println("Raw Response: $bodyString")
+
+            val parsedData: Map<String, Any> = mapper.readValue(bodyString)
+            parsedData
         }
-    } catch (_: Exception) {
+
+    } catch (e: Exception) {
+        println("Error: ${e.message}")
         null
     }
 }
@@ -246,13 +261,30 @@ fun sendToESP32(ip: String, pkt: Map<String, Any>) {
 
 fun sendToBackend(url: String, pkt: Map<String, Any>) {
     try {
+        println("Sending to cloud ... ")
+
         client.newCall(
             Request.Builder()
                 .url(url)
-                .post(mapper.writeValueAsString(pkt).toRequestBody("application/json".toMediaType()))
+                .post(
+                    mapper.writeValueAsString(pkt)
+                        .toRequestBody("application/json".toMediaType())
+                )
                 .build()
-        ).execute().use { }
+        ).execute().use { response ->
+
+            println("Response Code: ${response.code}")
+
+            val responseBody = response.body?.string()
+
+            if (responseBody != null) {
+                println("Response Body: $responseBody")
+            } else {
+                println("Response body is null")
+            }
+        }
+
     } catch (e: Exception) {
-        println("Cloud send failed: $e")
+        println("Cloud send failed: ${e.message}")
     }
 }
