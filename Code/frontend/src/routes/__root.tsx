@@ -3,7 +3,7 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { AuthProvider } from "@/context/AuthContext"
 import appCss from '../styles.css?url'
-
+import { Toaster } from "@/components/ui/sonner"
 export const Route = createRootRoute({
   
  
@@ -40,6 +40,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <AuthProvider>
           {children}
+          <Toaster />
         </AuthProvider>
 
         <TanStackDevtools

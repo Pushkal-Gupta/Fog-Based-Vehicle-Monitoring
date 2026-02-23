@@ -1,13 +1,36 @@
-import { SignupForm } from '@/components/signup-form'
-import { createFileRoute } from '@tanstack/react-router'
+"use client"
 
-import { Car } from 'lucide-react'
+import { useEffect, useState } from "react"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { onAuthStateChanged } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
-export const Route = createFileRoute('/signup')({
+import { SignupForm } from "@/components/signup-form"
+import { Car } from "lucide-react"
+
+export const Route = createFileRoute("/signup")({
   component: SignUpPage,
 })
 
 function SignUpPage() {
+  const navigate = useNavigate()
+  const [checkingAuth, setCheckingAuth] = useState(true)
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navigate({ to: "/" }) // Redirect if already logged in
+      } else {
+        setCheckingAuth(false)
+      }
+    })
+
+    return () => unsubscribe()
+  }, [navigate])
+
+  // Prevent rendering while checking
+  if (checkingAuth) return null
+
   return (
     <div>
       <div className="grid min-h-svh lg:grid-cols-2">
@@ -27,6 +50,7 @@ function SignUpPage() {
             </div>
           </div>
         </div>
+
         <div className="bg-muted relative hidden lg:block">
           <img
             src="https://plus.unsplash.com/premium_photo-1693810032530-de2449b95389?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0"

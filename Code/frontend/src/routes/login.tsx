@@ -1,17 +1,36 @@
-
 "use client"
 
-import { createFileRoute } from '@tanstack/react-router'
+import { useEffect, useState } from "react"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { onAuthStateChanged } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
-import { LoginForm } from '@/components/login-form'
+import { LoginForm } from "@/components/login-form"
 import { Car } from "lucide-react"
 
-export const Route = createFileRoute('/login')({
-  
+export const Route = createFileRoute("/login")({
   component: LoginPage,
 })
 
 function LoginPage() {
+  const navigate = useNavigate()
+  const [checkingAuth, setCheckingAuth] = useState(true)
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        navigate({ to: "/" }) // Redirect to home
+      } else {
+        setCheckingAuth(false)
+      }
+    })
+
+    return () => unsubscribe()
+  }, [navigate])
+
+  // Prevent page rendering while checking auth
+  if (checkingAuth) return null
+
   return (
     <div>
       <div className="grid min-h-svh lg:grid-cols-2">
