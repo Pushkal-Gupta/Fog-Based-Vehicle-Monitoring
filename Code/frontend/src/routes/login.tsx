@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { onAuthStateChanged } from "firebase/auth"
+import { Car } from "lucide-react"
 import { auth } from "@/lib/firebase"
 
 import { LoginForm } from "@/components/login-form"
-import { Car } from "lucide-react"
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,

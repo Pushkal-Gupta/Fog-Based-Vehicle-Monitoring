@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedClaimVehicleRouteImport } from './routes/_authenticated/claim-vehicle'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -39,17 +40,25 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedClaimVehicleRoute =
+  AuthenticatedClaimVehicleRouteImport.update({
+    id: '/claim-vehicle',
+    path: '/claim-vehicle',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/claim-vehicle': typeof AuthenticatedClaimVehicleRoute
 }
 export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/claim-vehicle': typeof AuthenticatedClaimVehicleRoute
   '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
@@ -58,19 +67,21 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/_authenticated/claim-vehicle': typeof AuthenticatedClaimVehicleRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/login' | '/signup'
+  fullPaths: '/' | '/admin' | '/login' | '/signup' | '/claim-vehicle'
   fileRoutesByTo: FileRoutesByTo
-  to: '/admin' | '/login' | '/signup' | '/'
+  to: '/admin' | '/login' | '/signup' | '/claim-vehicle' | '/'
   id:
     | '__root__'
     | '/_authenticated'
     | '/admin'
     | '/login'
     | '/signup'
+    | '/_authenticated/claim-vehicle'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
@@ -118,14 +129,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/claim-vehicle': {
+      id: '/_authenticated/claim-vehicle'
+      path: '/claim-vehicle'
+      fullPath: '/claim-vehicle'
+      preLoaderRoute: typeof AuthenticatedClaimVehicleRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedClaimVehicleRoute: typeof AuthenticatedClaimVehicleRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedClaimVehicleRoute: AuthenticatedClaimVehicleRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 

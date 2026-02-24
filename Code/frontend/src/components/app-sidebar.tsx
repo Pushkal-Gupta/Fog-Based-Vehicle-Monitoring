@@ -1,203 +1,197 @@
 "use client"
 
 import * as React from "react"
+import { Car, ChevronsUpDown, Plus } from "lucide-react"
+import { useNavigate } from "@tanstack/react-router"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon, TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon, FrameIcon, PieChartIcon, MapIcon, Car } from "lucide-react"
+
 import { auth } from "@/lib/firebase"
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: (
-        <GalleryVerticalEndIcon
-        />
-      ),
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: (
-        <AudioLinesIcon
-        />
-      ),
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: (
-        <TerminalIcon
-        />
-      ),
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: (
-        <TerminalSquareIcon
-        />
-      ),
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: (
-        <BotIcon
-        />
-      ),
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: (
-        <BookOpenIcon
-        />
-      ),
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: (
-        <Settings2Icon
-        />
-      ),
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: (
-        <FrameIcon
-        />
-      ),
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: (
-        <PieChartIcon
-        />
-      ),
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: (
-        <MapIcon
-        />
-      ),
-    },
-  ],
+type Vehicle = {
+  vehicle_id: string
+  vin: string
+  dealership_name: string
+  activation_status: string
+  claimed_at: number
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+  const { isMobile } = useSidebar()
+  const navigate = useNavigate()
+  const [vehicles, setVehicles] = React.useState<Array<Vehicle>>([])
+  const [selectedVehicle, setSelectedVehicle] =
+    React.useState<Vehicle | null>(null)
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const user = auth.currentUser
+        if (!user) return
+
+        const token = await user.getIdToken()
+
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/vehicle/my`,
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          }
+        )
+
+        if (!res.ok) throw new Error("Failed to fetch vehicles")
+
+        const data = await res.json()
+        setVehicles(data.vehicles || [])
+      } catch (err) {
+        console.error(err)
+        setVehicles([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchVehicles()
+  }, [])
+
+  const headerTitle = selectedVehicle
+    ? selectedVehicle.vehicle_id
+    : "No vehicle selected"
+
+  const headerSubtitle = selectedVehicle
+    ? selectedVehicle.vin
+    : "Please choose a vehicle"
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <div className="flex justify-center gap-2 md:justify-start">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                >
+                  <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                    <Car className="size-4" />
+                  </div>
 
-          <div className="bg-primary text-primary-foreground flex p-3 items-center justify-center rounded-xl">
-            <Car className="size-5" />
-          </div>
-          <div className="flex flex-col justify-center">
-            <p className="text-sm font-semibold">Vehicle Monitoring Dashboard.</p>
-          </div>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-medium">
+                      {headerTitle}
+                    </span>
+                    <span className="truncate text-xs">
+                      {headerSubtitle}
+                    </span>
+                  </div>
 
-        </div>
+                  <ChevronsUpDown className="ml-auto" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
 
+              <DropdownMenuContent
+                className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                align="start"
+                side={isMobile ? "bottom" : "right"}
+                sideOffset={4}
+              >
+                <DropdownMenuLabel className="text-muted-foreground text-xs">
+                  Your Vehicles
+                </DropdownMenuLabel>
+
+                {loading && (
+                  <DropdownMenuItem disabled>
+                    Loading...
+                  </DropdownMenuItem>
+                )}
+
+                {!loading && vehicles.length === 0 && (
+                  <DropdownMenuItem disabled>
+                    No vehicles owned
+                  </DropdownMenuItem>
+                )}
+
+                {!loading &&
+                  vehicles.map((vehicle, index) => (
+                    <DropdownMenuItem
+                      key={vehicle.vehicle_id}
+                      className="gap-2 p-2"
+                      onClick={() => setSelectedVehicle(vehicle)}
+                    >
+                      <div className="flex size-6 items-center justify-center rounded-md border">
+                        <Car className="size-3.5 shrink-0" />
+                      </div>
+
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">
+                          {vehicle.vehicle_id}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {vehicle.vin}
+                        </span>
+                      </div>
+
+                      <DropdownMenuShortcut>
+                        ⌘{index + 1}
+                      </DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                  ))}
+
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem className="gap-2 p-2" onClick={() => {
+                  navigate({
+                    to: '/claim-vehicle'
+                  })
+                }}>
+                  <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                    <Plus className="size-4" />
+                  </div>
+                  <div className="text-muted-foreground font-medium">
+                    Add/Claim new vehicle.
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
 
-      </SidebarContent>
+      <SidebarContent />
+
       <SidebarFooter>
-        <NavUser user={{ name: auth.currentUser?.displayName || "User", email: auth.currentUser?.email || "user@example.com", avatar: auth.currentUser?.photoURL || undefined }} />
+        <NavUser
+          user={{
+            name: auth.currentUser?.displayName || "User",
+            email: auth.currentUser?.email || "user@example.com",
+            avatar: auth.currentUser?.photoURL || undefined,
+          }}
+        />
       </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   )
