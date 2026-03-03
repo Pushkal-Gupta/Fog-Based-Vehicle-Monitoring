@@ -5,7 +5,9 @@ import appCss from '../styles.css?url'
 import { AuthProvider } from "@/context/AuthContext"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
+const queryClient = new QueryClient()
 export const Route = createRootRoute({
 
 
@@ -40,11 +42,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <AuthProvider>
-          <TooltipProvider> {children}</TooltipProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <TooltipProvider> {children}</TooltipProvider>
 
-          <Toaster />
-        </AuthProvider>
+            <Toaster />
+          </AuthProvider>
+        </QueryClientProvider>
+
 
         <TanStackDevtools
           config={{

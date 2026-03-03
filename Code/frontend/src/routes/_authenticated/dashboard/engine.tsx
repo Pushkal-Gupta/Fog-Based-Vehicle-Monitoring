@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { useEffect } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { useVehicle } from "@/context/vehicle-context"
 import { getVehicleIntelligence } from "@/lib/api/intelligence"
 
@@ -11,30 +11,45 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
     const { selectedVehicle } = useVehicle()
+    const queryKey = selectedVehicle
+        ? ["intelligence", selectedVehicle.vehicle_id]
+        : ["intelligence", "no-vehicle"]
+    const {
+        data,
+        isLoading,
+        isError,
+        error,
+    } = useQuery({
+        queryKey,
+        queryFn: () =>
+            getVehicleIntelligence(
+                selectedVehicle!.vehicle_id,
+                100
+            ),
+        enabled: !!selectedVehicle?.vehicle_id,
+        refetchInterval: 5000,
+        staleTime: 5000,
 
-    useEffect(() => {
-        // if (!selectedVehicle?.vehicle_id) return
+        // ✅ v5 replacement for keepPreviousData
+        placeholderData: (previousData) => previousData,
+    })
 
-        // async function testFetch() {
-        //     try {
-        //         const data = await getVehicleIntelligence(
-        //             selectedVehicle.vehicle_id,
-        //             50
-        //         )
+    if (!selectedVehicle) {
+        return (
+            <div className="flex h-[60vh] items-center justify-center text-muted-foreground text-lg">
+                Select a vehicle first
+            </div>
+        )
+    }
 
-        //         console.log("Rows:", data.length)
-        //         console.log("First row:", data[0])
-        //     } catch (err) {
-        //         console.error(err)
-        //     }
-        // }
-
-        // testFetch()
-    }, [selectedVehicle])
+    if (isLoading) return <div>Loading data...</div>
+    if (isError)
+        return <div>Error: {(error).message}</div>
 
     return (
-        <div>
-            Engine details for {selectedVehicle?.vehicle_id}
+        <div className="space-y-4">
+            <p>Rows fetched: {data?.length}</p>
+            {/* we’ll visualize this later */}
         </div>
     )
 }
