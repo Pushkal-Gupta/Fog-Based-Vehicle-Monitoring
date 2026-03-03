@@ -67,7 +67,7 @@ fun aggregate(samples: List<Map<String, Any>>, samplePeriod: Double): Map<String
     val t0 = samples.first().l("timestamp_ms")
     val t1 = last.l("timestamp_ms")
 
-// prevent divide-by-zero physics
+    // prevent divide-by-zero physics
     val dt = max((t1 - t0) / 1000.0, samplePeriod)
 
     val rpmSeries = s("motor_rpm")
@@ -90,6 +90,7 @@ fun aggregate(samples: List<Map<String, Any>>, samplePeriod: Double): Map<String
         "engine_rpm_variance" to rpmSeries.variance(),
         "vibration_rms" to sqrt(s("vibration_rms").map { it * it }.mean()),
         "dominant_vibration_hz" to s("dominant_vibration_hz").mean(),
+        "vibration_anomaly" to s("vibration_anomaly").mean(),
 
         /* ---------- ELECTRICAL ---------- */
         "battery_voltage_v" to s("battery_voltage_v").mean(),
@@ -99,7 +100,14 @@ fun aggregate(samples: List<Map<String, Any>>, samplePeriod: Double): Map<String
         /* ---------- LOAD ---------- */
         "engine_load_pct" to s("engine_load_pct").mean(),
         "fuel_efficiency_kmpl" to s("fuel_efficiency_kmpl").mean(),
-        "vehicle_speed_kmph" to s("vehicle_speed_kmph").mean()
+        "vehicle_speed_kmph" to s("vehicle_speed_kmph").mean(),
+
+        /* ---------- RUL & SCORES ---------- */
+        "engine_rul_pct" to s("engine_rul_pct").mean(),
+        "brake_rul_pct" to s("brake_rul_pct").mean(),
+        "battery_rul_pct" to s("battery_rul_pct").mean(),
+        "brake_pad_remaining_pct" to s("brake_pad_remaining_pct").mean(),
+        "brake_disc_score" to s("brake_disc_score").mean()
     )
 
 }
