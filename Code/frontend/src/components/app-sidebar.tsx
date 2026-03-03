@@ -1,8 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { Car, ChevronsUpDown, Plus } from "lucide-react"
-import { useNavigate } from "@tanstack/react-router"
+import {
+  Activity, Battery, Car, ChevronsUpDown,
+  Disc,
+  Flame,
+  LayoutDashboard,
+  Plus,
+} from "lucide-react"
+import { Link, useLocation, useNavigate } from "@tanstack/react-router"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +24,10 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupAction,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -25,6 +35,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useVehicle } from "@/context/vehicle-context"
 
 import { auth } from "@/lib/firebase"
 
@@ -38,10 +49,10 @@ type Vehicle = {
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { isMobile } = useSidebar()
+  const location = useLocation()
   const navigate = useNavigate()
   const [vehicles, setVehicles] = React.useState<Array<Vehicle>>([])
-  const [selectedVehicle, setSelectedVehicle] =
-    React.useState<Vehicle | null>(null)
+  const { selectedVehicle, setSelectedVehicle } = useVehicle()
   const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
@@ -180,7 +191,82 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent />
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
+
+          <SidebarGroupContent>
+            <SidebarMenu>
+
+              {/* Overview */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === "/dashboard"}
+                >
+                  <Link to="/dashboard">
+                    <LayoutDashboard />
+                    <span>Overview</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Engine */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname.startsWith("/dashboard/engine")}
+                >
+                  <Link to="/dashboard/engine">
+                    <Flame />
+                    <span>Engine</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Brakes */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname.startsWith("/dashboard/brakes")}
+                >
+                  <Link to="/dashboard/brakes">
+                    <Disc />
+                    <span>Brakes</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Mechanical */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname.startsWith("/dashboard/mechanical")}
+                >
+                  <Link to="/dashboard/mechanical">
+                    <Activity />
+                    <span>Mechanical</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* Electrical */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname.startsWith("/dashboard/electrical")}
+                >
+                  <Link to="/dashboard/electrical">
+                    <Battery />
+                    <span>Electrical</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
 
       <SidebarFooter>
         <NavUser

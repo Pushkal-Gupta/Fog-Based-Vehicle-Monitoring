@@ -1,3 +1,4 @@
+import { BadgeCheckIcon, BellIcon, ChevronsUpDownIcon, CreditCardIcon, LogOutIcon, SparklesIcon } from "lucide-react"
 import {
   Avatar,
   AvatarFallback,
@@ -19,7 +20,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { auth } from "@/lib/firebase"
-import { ChevronsUpDownIcon, SparklesIcon, BadgeCheckIcon, CreditCardIcon, BellIcon, LogOutIcon } from "lucide-react"
 
 export function NavUser({
   user,

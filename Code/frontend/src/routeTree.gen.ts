@@ -14,7 +14,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedClaimVehicleRouteImport } from './routes/_authenticated/claim-vehicle'
+import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedDashboardMechanicalRouteImport } from './routes/_authenticated/dashboard/mechanical'
+import { Route as AuthenticatedDashboardEngineRouteImport } from './routes/_authenticated/dashboard/engine'
+import { Route as AuthenticatedDashboardElectricalRouteImport } from './routes/_authenticated/dashboard/electrical'
+import { Route as AuthenticatedDashboardBrakesRouteImport } from './routes/_authenticated/dashboard/brakes'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -40,11 +46,46 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedClaimVehicleRoute =
   AuthenticatedClaimVehicleRouteImport.update({
     id: '/claim-vehicle',
     path: '/claim-vehicle',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedDashboardIndexRoute =
+  AuthenticatedDashboardIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardMechanicalRoute =
+  AuthenticatedDashboardMechanicalRouteImport.update({
+    id: '/mechanical',
+    path: '/mechanical',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardEngineRoute =
+  AuthenticatedDashboardEngineRouteImport.update({
+    id: '/engine',
+    path: '/engine',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardElectricalRoute =
+  AuthenticatedDashboardElectricalRouteImport.update({
+    id: '/electrical',
+    path: '/electrical',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardBrakesRoute =
+  AuthenticatedDashboardBrakesRouteImport.update({
+    id: '/brakes',
+    path: '/brakes',
+    getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -53,6 +94,12 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/claim-vehicle': typeof AuthenticatedClaimVehicleRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/dashboard/brakes': typeof AuthenticatedDashboardBrakesRoute
+  '/dashboard/electrical': typeof AuthenticatedDashboardElectricalRoute
+  '/dashboard/engine': typeof AuthenticatedDashboardEngineRoute
+  '/dashboard/mechanical': typeof AuthenticatedDashboardMechanicalRoute
+  '/dashboard/': typeof AuthenticatedDashboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
@@ -60,6 +107,11 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/claim-vehicle': typeof AuthenticatedClaimVehicleRoute
   '/': typeof AuthenticatedIndexRoute
+  '/dashboard/brakes': typeof AuthenticatedDashboardBrakesRoute
+  '/dashboard/electrical': typeof AuthenticatedDashboardElectricalRoute
+  '/dashboard/engine': typeof AuthenticatedDashboardEngineRoute
+  '/dashboard/mechanical': typeof AuthenticatedDashboardMechanicalRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,13 +120,40 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_authenticated/claim-vehicle': typeof AuthenticatedClaimVehicleRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/dashboard/brakes': typeof AuthenticatedDashboardBrakesRoute
+  '/_authenticated/dashboard/electrical': typeof AuthenticatedDashboardElectricalRoute
+  '/_authenticated/dashboard/engine': typeof AuthenticatedDashboardEngineRoute
+  '/_authenticated/dashboard/mechanical': typeof AuthenticatedDashboardMechanicalRoute
+  '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/login' | '/signup' | '/claim-vehicle'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/signup'
+    | '/claim-vehicle'
+    | '/dashboard'
+    | '/dashboard/brakes'
+    | '/dashboard/electrical'
+    | '/dashboard/engine'
+    | '/dashboard/mechanical'
+    | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/admin' | '/login' | '/signup' | '/claim-vehicle' | '/'
+  to:
+    | '/admin'
+    | '/login'
+    | '/signup'
+    | '/claim-vehicle'
+    | '/'
+    | '/dashboard/brakes'
+    | '/dashboard/electrical'
+    | '/dashboard/engine'
+    | '/dashboard/mechanical'
+    | '/dashboard'
   id:
     | '__root__'
     | '/_authenticated'
@@ -82,7 +161,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/_authenticated/claim-vehicle'
+    | '/_authenticated/dashboard'
     | '/_authenticated/'
+    | '/_authenticated/dashboard/brakes'
+    | '/_authenticated/dashboard/electrical'
+    | '/_authenticated/dashboard/engine'
+    | '/_authenticated/dashboard/mechanical'
+    | '/_authenticated/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -129,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/claim-vehicle': {
       id: '/_authenticated/claim-vehicle'
       path: '/claim-vehicle'
@@ -136,16 +228,77 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClaimVehicleRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/dashboard/': {
+      id: '/_authenticated/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/mechanical': {
+      id: '/_authenticated/dashboard/mechanical'
+      path: '/mechanical'
+      fullPath: '/dashboard/mechanical'
+      preLoaderRoute: typeof AuthenticatedDashboardMechanicalRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/engine': {
+      id: '/_authenticated/dashboard/engine'
+      path: '/engine'
+      fullPath: '/dashboard/engine'
+      preLoaderRoute: typeof AuthenticatedDashboardEngineRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/electrical': {
+      id: '/_authenticated/dashboard/electrical'
+      path: '/electrical'
+      fullPath: '/dashboard/electrical'
+      preLoaderRoute: typeof AuthenticatedDashboardElectricalRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/brakes': {
+      id: '/_authenticated/dashboard/brakes'
+      path: '/brakes'
+      fullPath: '/dashboard/brakes'
+      preLoaderRoute: typeof AuthenticatedDashboardBrakesRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
   }
 }
 
+interface AuthenticatedDashboardRouteChildren {
+  AuthenticatedDashboardBrakesRoute: typeof AuthenticatedDashboardBrakesRoute
+  AuthenticatedDashboardElectricalRoute: typeof AuthenticatedDashboardElectricalRoute
+  AuthenticatedDashboardEngineRoute: typeof AuthenticatedDashboardEngineRoute
+  AuthenticatedDashboardMechanicalRoute: typeof AuthenticatedDashboardMechanicalRoute
+  AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+}
+
+const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
+  {
+    AuthenticatedDashboardBrakesRoute: AuthenticatedDashboardBrakesRoute,
+    AuthenticatedDashboardElectricalRoute:
+      AuthenticatedDashboardElectricalRoute,
+    AuthenticatedDashboardEngineRoute: AuthenticatedDashboardEngineRoute,
+    AuthenticatedDashboardMechanicalRoute:
+      AuthenticatedDashboardMechanicalRoute,
+    AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+  }
+
+const AuthenticatedDashboardRouteWithChildren =
+  AuthenticatedDashboardRoute._addFileChildren(
+    AuthenticatedDashboardRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedClaimVehicleRoute: typeof AuthenticatedClaimVehicleRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedClaimVehicleRoute: AuthenticatedClaimVehicleRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 

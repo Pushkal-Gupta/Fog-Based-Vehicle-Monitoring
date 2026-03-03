@@ -1,44 +1,33 @@
-import { createFileRoute } from "@tanstack/react-router"
-
-import { AppSidebar } from "@/components/app-sidebar"
-
-
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 export const Route = createFileRoute("/_authenticated/")({
-  component: App,
+  component: AuthHome,
 })
 
-function App() {
+function AuthHome() {
+  const navigate = useNavigate()
+
   return (
-    <div>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-            <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="-ml-1" />
-              <h1 className="font-semibold">Vehicle Dashboard.</h1>
-            </div>
-          </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-              <div className="bg-muted/50 aspect-video rounded-xl" />
-              <div className="bg-muted/50 aspect-video rounded-xl" />
-              <div className="bg-muted/50 aspect-video rounded-xl" />
-            </div>
-            <div className="bg-muted/50 min-h-screen flex-1 rounded-xl md:min-h-min" />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+    <div className="flex items-center justify-center min-h-screen p-6">
+      <Card className="w-full max-w-md shadow-xl rounded-2xl">
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">
+            Welcome
+          </CardTitle>
+        </CardHeader>
 
-
-
-
+        <CardContent className="flex justify-center">
+          <Button
+            size="lg"
+            className="w-full text-lg"
+            onClick={() => navigate({ to: "/dashboard" })}
+          >
+            Go to Dashboard
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }
