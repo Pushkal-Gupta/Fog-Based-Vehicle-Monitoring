@@ -1,25 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
+import {
+    Area,
+    AreaChart,
+    CartesianGrid,
+    ResponsiveContainer,
+    XAxis,
+    YAxis,
+} from "recharts"
 import { useVehicle } from "@/context/vehicle-context"
 import { getVehicleIntelligence } from "@/lib/api/intelligence"
-import { useMemo } from "react"
 
 import {
     ChartContainer,
-    ChartTooltip,
-    ChartTooltipContent,
     ChartLegend,
     ChartLegendContent,
+    ChartTooltip,
+    ChartTooltipContent,
 } from "@/components/ui/chart"
 
-import {
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    ResponsiveContainer,
-} from "recharts"
 
 export const Route = createFileRoute(
     "/_authenticated/dashboard/engine"
@@ -81,7 +81,7 @@ function RouteComponent() {
     if (isError) {
         return (
             <div className="px-4">
-                Error: {(error as Error)?.message ?? "Unknown error"}
+                Error: {(error).message}
             </div>
         )
     }
