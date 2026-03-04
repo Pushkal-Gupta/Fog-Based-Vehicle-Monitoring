@@ -1,23 +1,45 @@
+"use client"
+
+import * as React from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
 import {
   Area,
   AreaChart,
   CartesianGrid,
-  ResponsiveContainer,
+  Line,
+  ReferenceLine,
   XAxis,
   YAxis,
 } from "recharts"
+import type { ChartConfig } from "@/components/ui/chart"
+
 import { useVehicle } from "@/context/vehicle-context"
 import { getVehicleIntelligence } from "@/lib/api/intelligence"
 
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+
+import {
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export const Route = createFileRoute(
   "/_authenticated/dashboard/brakes"
@@ -25,224 +47,232 @@ export const Route = createFileRoute(
   component: BrakesPage,
 })
 
+const chartConfig = {
+  temp: {
+    label: "Brake Temperature (°C)",
+    color: "var(--chart-1)",
+  },
+  rise: {
+    label: "Temp Rise Rate",
+    color: "var(--chart-2)",
+  },
+} satisfies ChartConfig
+
 function BrakesPage() {
   const { selectedVehicle } = useVehicle()
+  const [timeRange, setTimeRange] = React.useState("7")
 
-  const queryKey = selectedVehicle
-    ? ["intelligence-brakes", selectedVehicle.vehicle_id]
-    : ["intelligence-brakes", "no-vehicle"]
-
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey,
+  const { data, isLoading } = useQuery({
+    queryKey: ["brakes", selectedVehicle?.vehicle_id],
     queryFn: () =>
-      getVehicleIntelligence(selectedVehicle!.vehicle_id, 100),
+      getVehicleIntelligence(selectedVehicle!.vehicle_id, 200),
     enabled: !!selectedVehicle?.vehicle_id,
     refetchInterval: 5000,
-    staleTime: 5000,
-    placeholderData: (previousData) => previousData,
   })
 
-  const processedSeries = useMemo(() => {
+  const processedData = React.useMemo(() => {
     if (!data) return []
 
-    return [...data].reverse().map((row) => ({
-      time: Number(row.timestamp_ms),
+    const mapped = [...data].reverse().map((row) => ({
+      date: new Date(Number(row.timestamp_ms)),
       temp: Number(row.trigger_measured_brake_temp_c),
       rise: Number(row.trigger_brake_temp_rise_rate),
       margin: Number(row.thermal_brake_margin),
       rul: Number(row.brake_rul_pct),
+      mitigation: row.fog_brake_stress_mitigation_active,
     }))
-  }, [data])
 
-  const latest = processedSeries.at(-1)
-  const latestRow = data?.[0]
+    const now = mapped.at(-1)?.date
+    if (!now) return mapped
 
-  const latestTemp = latest?.temp ?? 0
-  const latestRUL = latest?.rul ?? 0
-  const latestMargin = latest?.margin ?? 0
+    const days = Number(timeRange)
+    const start = new Date(now)
+    start.setDate(start.getDate() - days)
 
-  const getHealthStatus = (rul: number) => {
-    if (rul > 70) return { label: "Healthy", color: "text-green-500" }
-    if (rul > 40) return { label: "Degrading", color: "text-yellow-500" }
-    return { label: "Critical", color: "text-red-500" }
-  }
+    return mapped.filter((item) => item.date >= start)
+  }, [data, timeRange])
 
-  const health = getHealthStatus(latestRUL)
+  const latest = processedData.at(-1)
 
   if (!selectedVehicle) {
     return (
-      <div className="flex h-[60vh] items-center justify-center text-muted-foreground text-lg px-4 text-center">
+      <div className="flex h-[60vh] items-center justify-center text-muted-foreground text-lg">
         Select a vehicle first
       </div>
     )
   }
 
-  if (isLoading) return <div className="px-4">Loading data...</div>
-
-  if (isError) {
-    return (
-      <div className="px-4">
-        Error: {(error)?.message ?? "Unknown error"}
-      </div>
-    )
+  if (isLoading) {
+    return <div className="p-6">Loading brake data...</div>
   }
 
   return (
     <div className="space-y-6 px-4 pb-10">
 
-      {/* ================= KPI SECTION ================= */}
+      {/* ================= KPI CARDS ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-2xl border p-5">
-          <p className="text-sm text-muted-foreground">
-            Brake RUL
-          </p>
-          <p className="text-2xl sm:text-3xl font-semibold">
-            {latestRUL.toFixed(2)}%
-          </p>
-          <p className={`text-sm font-medium ${health.color}`}>
-            {health.label}
-          </p>
-        </div>
 
-        <div className="rounded-2xl border p-5">
-          <p className="text-sm text-muted-foreground">
-            Current Brake Temperature
-          </p>
-          <p className="text-2xl sm:text-3xl font-semibold">
-            {latestTemp.toFixed(1)} °C
-          </p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Brake RUL</CardTitle>
+            <CardDescription>
+              Remaining useful life percentage
+            </CardDescription>
+          </CardHeader>
+          <CardContent
+            className={`text-3xl font-semibold ${latest?.rul > 70
+                ? "text-green-500"
+                : latest?.rul > 40
+                  ? "text-yellow-500"
+                  : "text-red-500"
+              }`}
+          >
+            {latest?.rul?.toFixed(2) ?? 0}%
+          </CardContent>
+        </Card>
 
-        <div className="rounded-2xl border p-5">
-          <p className="text-sm text-muted-foreground">
-            Service Required
-          </p>
-          <p className="text-2xl sm:text-3xl font-semibold">
-            {latestRow?.fog_predictive_service_required
-              ? "Yes"
-              : "No"}
-          </p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Brake Temperature</CardTitle>
+            <CardDescription>
+              Current measured disc temperature
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-3xl font-semibold">
+            {latest?.temp?.toFixed(1) ?? 0} °C
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Mitigation Mode</CardTitle>
+            <CardDescription>
+              Thermal stress mitigation status
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-3xl font-semibold">
+            {latest?.mitigation ? "Active" : "Inactive"}
+          </CardContent>
+        </Card>
+
       </div>
 
-      {/* ================= MAIN CHART ================= */}
-      <div className="rounded-2xl border p-4 sm:p-6">
-        <ChartContainer
-          config={{
-            temp: {
-              label: "Brake Temperature (°C)",
-              color: "#ef4444",
-            },
-            rise: {
-              label: "Temp Rise Rate",
-              color: "#3b82f6",
-            },
-          }}
-        >
-          <ResponsiveContainer width="100%" height={320}>
-            <AreaChart data={processedSeries}>
+      {/* ================= INTERACTIVE CHART ================= */}
+      <Card className="pt-0">
+        <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+          <div className="grid flex-1 gap-1">
+            <CardTitle>Brake Thermal Trend</CardTitle>
+            <CardDescription>
+              Temperature and rise-rate behaviour over time
+            </CardDescription>
+          </div>
+
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-[140px] rounded-lg">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              <SelectItem value="30">Last 30 days</SelectItem>
+              <SelectItem value="7">Last 7 days</SelectItem>
+              <SelectItem value="1">Last 24 hours</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardHeader>
+
+        <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+          <ChartContainer
+            config={chartConfig}
+            className="aspect-auto h-[320px] w-full"
+          >
+            <AreaChart data={processedData}>
               <defs>
                 <linearGradient id="fillTemp" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.05} />
-                </linearGradient>
-
-                <linearGradient id="fillRise" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05} />
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-temp)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-temp)"
+                    stopOpacity={0.1}
+                  />
                 </linearGradient>
               </defs>
 
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid vertical={false} />
 
               <XAxis
-                dataKey="time"
+                dataKey="date"
                 tickFormatter={(value) =>
-                  new Date(Number(value)).toLocaleTimeString()
+                  new Date(value).toLocaleDateString()
                 }
-                minTickGap={20}
+                tickLine={false}
+                axisLine={false}
+                minTickGap={32}
               />
 
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" width={50} />
+              <YAxis />
 
               <ChartTooltip
+                cursor={false}
                 content={
                   <ChartTooltipContent
                     labelFormatter={(value) =>
-                      new Date(Number(value)).toLocaleTimeString()
+                      new Date(value).toLocaleString()
                     }
                     indicator="dot"
                   />
                 }
               />
 
+              {/* Critical temperature threshold example */}
+              <ReferenceLine
+                y={400}
+                stroke="var(--color-rise)"
+                strokeDasharray="4 4"
+              />
+
+              {/* Temperature as Area */}
               <Area
-                yAxisId="left"
                 type="monotone"
                 dataKey="temp"
-                stroke="#ef4444"
+                stroke="var(--color-temp)"
                 fill="url(#fillTemp)"
                 strokeWidth={2}
-                dot={false}
               />
 
-              <Area
-                yAxisId="right"
+              {/* Rise Rate as Line */}
+              <Line
                 type="monotone"
                 dataKey="rise"
-                stroke="#3b82f6"
-                fill="url(#fillRise)"
-                strokeWidth={2}
+                stroke="var(--color-rise)"
+                strokeWidth={3}
                 dot={false}
               />
+
+              <ChartLegend content={<ChartLegendContent />} />
             </AreaChart>
-          </ResponsiveContainer>
-        </ChartContainer>
-      </div>
+          </ChartContainer>
+        </CardContent>
+      </Card>
 
-      {/* ================= THERMAL RISK PANEL ================= */}
-      <div className="rounded-2xl border p-6 space-y-4">
-        <h3 className="text-lg font-semibold">
-          Thermal Risk Status
-        </h3>
+      {/* ================= THERMAL PANEL ================= */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Thermal Brake Margin</CardTitle>
+          <CardDescription>
+            Remaining thermal safety margin
+          </CardDescription>
+        </CardHeader>
+        <CardContent
+          className={`text-3xl font-semibold ${latest?.margin < 0 ? "text-red-500" : "text-green-500"
+            }`}
+        >
+          {latest?.margin?.toFixed(3) ?? 0}
+        </CardContent>
+      </Card>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-muted-foreground">
-              Thermal Brake Margin:
-            </span>{" "}
-            <span
-              className={
-                latestMargin < 0
-                  ? "text-red-500 font-medium"
-                  : "text-green-500 font-medium"
-              }
-            >
-              {latestMargin.toFixed(3)}
-            </span>
-          </div>
-
-          <div>
-            <span className="text-muted-foreground">
-              Stress Mitigation Active:
-            </span>{" "}
-            {latestRow?.fog_brake_stress_mitigation_active
-              ? "Yes"
-              : "No"}
-          </div>
-
-          <div>
-            <span className="text-muted-foreground">
-              AI Confidence:
-            </span>{" "}
-            {(
-              (latestRow?.fog_decision_confidence ?? 0) * 100
-            ).toFixed(1)}
-            %
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

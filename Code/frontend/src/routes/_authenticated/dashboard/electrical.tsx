@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import type {ChartConfig} from "@/components/ui/chart";
+import type { ChartConfig } from "@/components/ui/chart";
 import { useVehicle } from "@/context/vehicle-context"
 import { getVehicleIntelligence } from "@/lib/api/intelligence"
 
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/card"
 
 import {
-  
+
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
@@ -164,7 +164,7 @@ function ElectricalPage() {
         <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
           <ChartContainer
             config={chartConfig}
-            className="aspect-auto h-[320px] w-full"
+            className="aspect-auto h-80 w-full"
           >
             <AreaChart data={processedData}>
               <defs>
@@ -204,7 +204,10 @@ function ElectricalPage() {
                 content={
                   <ChartTooltipContent
                     labelFormatter={(value) =>
-                      new Date(value).toLocaleDateString()
+                      new Date(value).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })
                     }
                     indicator="dot"
                   />
