@@ -109,7 +109,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                     <Car className="size-4" />
                   </div>
-
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">
                       {headerTitle}
@@ -118,7 +117,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                       {headerSubtitle}
                     </span>
                   </div>
-
                   <ChevronsUpDown className="ml-auto" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -263,6 +261,18 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
+
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                >
+                  <Link to="/dashboard/digital-twin">
+                    <Car />
+                    <span>Digital Twin</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

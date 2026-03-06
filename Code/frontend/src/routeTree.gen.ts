@@ -20,6 +20,7 @@ import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedDashboardMechanicalRouteImport } from './routes/_authenticated/dashboard/mechanical'
 import { Route as AuthenticatedDashboardEngineRouteImport } from './routes/_authenticated/dashboard/engine'
 import { Route as AuthenticatedDashboardElectricalRouteImport } from './routes/_authenticated/dashboard/electrical'
+import { Route as AuthenticatedDashboardDigitalTwinRouteImport } from './routes/_authenticated/dashboard/digital-twin'
 import { Route as AuthenticatedDashboardBrakesRouteImport } from './routes/_authenticated/dashboard/brakes'
 
 const SignupRoute = SignupRouteImport.update({
@@ -81,6 +82,12 @@ const AuthenticatedDashboardElectricalRoute =
     path: '/electrical',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const AuthenticatedDashboardDigitalTwinRoute =
+  AuthenticatedDashboardDigitalTwinRouteImport.update({
+    id: '/digital-twin',
+    path: '/digital-twin',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 const AuthenticatedDashboardBrakesRoute =
   AuthenticatedDashboardBrakesRouteImport.update({
     id: '/brakes',
@@ -96,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/claim-vehicle': typeof AuthenticatedClaimVehicleRoute
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/dashboard/brakes': typeof AuthenticatedDashboardBrakesRoute
+  '/dashboard/digital-twin': typeof AuthenticatedDashboardDigitalTwinRoute
   '/dashboard/electrical': typeof AuthenticatedDashboardElectricalRoute
   '/dashboard/engine': typeof AuthenticatedDashboardEngineRoute
   '/dashboard/mechanical': typeof AuthenticatedDashboardMechanicalRoute
@@ -108,6 +116,7 @@ export interface FileRoutesByTo {
   '/claim-vehicle': typeof AuthenticatedClaimVehicleRoute
   '/': typeof AuthenticatedIndexRoute
   '/dashboard/brakes': typeof AuthenticatedDashboardBrakesRoute
+  '/dashboard/digital-twin': typeof AuthenticatedDashboardDigitalTwinRoute
   '/dashboard/electrical': typeof AuthenticatedDashboardElectricalRoute
   '/dashboard/engine': typeof AuthenticatedDashboardEngineRoute
   '/dashboard/mechanical': typeof AuthenticatedDashboardMechanicalRoute
@@ -123,6 +132,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/dashboard/brakes': typeof AuthenticatedDashboardBrakesRoute
+  '/_authenticated/dashboard/digital-twin': typeof AuthenticatedDashboardDigitalTwinRoute
   '/_authenticated/dashboard/electrical': typeof AuthenticatedDashboardElectricalRoute
   '/_authenticated/dashboard/engine': typeof AuthenticatedDashboardEngineRoute
   '/_authenticated/dashboard/mechanical': typeof AuthenticatedDashboardMechanicalRoute
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/claim-vehicle'
     | '/dashboard'
     | '/dashboard/brakes'
+    | '/dashboard/digital-twin'
     | '/dashboard/electrical'
     | '/dashboard/engine'
     | '/dashboard/mechanical'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/claim-vehicle'
     | '/'
     | '/dashboard/brakes'
+    | '/dashboard/digital-twin'
     | '/dashboard/electrical'
     | '/dashboard/engine'
     | '/dashboard/mechanical'
@@ -164,6 +176,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/'
     | '/_authenticated/dashboard/brakes'
+    | '/_authenticated/dashboard/digital-twin'
     | '/_authenticated/dashboard/electrical'
     | '/_authenticated/dashboard/engine'
     | '/_authenticated/dashboard/mechanical'
@@ -256,6 +269,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardElectricalRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/dashboard/digital-twin': {
+      id: '/_authenticated/dashboard/digital-twin'
+      path: '/digital-twin'
+      fullPath: '/dashboard/digital-twin'
+      preLoaderRoute: typeof AuthenticatedDashboardDigitalTwinRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
     '/_authenticated/dashboard/brakes': {
       id: '/_authenticated/dashboard/brakes'
       path: '/brakes'
@@ -268,6 +288,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedDashboardRouteChildren {
   AuthenticatedDashboardBrakesRoute: typeof AuthenticatedDashboardBrakesRoute
+  AuthenticatedDashboardDigitalTwinRoute: typeof AuthenticatedDashboardDigitalTwinRoute
   AuthenticatedDashboardElectricalRoute: typeof AuthenticatedDashboardElectricalRoute
   AuthenticatedDashboardEngineRoute: typeof AuthenticatedDashboardEngineRoute
   AuthenticatedDashboardMechanicalRoute: typeof AuthenticatedDashboardMechanicalRoute
@@ -277,6 +298,8 @@ interface AuthenticatedDashboardRouteChildren {
 const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
   {
     AuthenticatedDashboardBrakesRoute: AuthenticatedDashboardBrakesRoute,
+    AuthenticatedDashboardDigitalTwinRoute:
+      AuthenticatedDashboardDigitalTwinRoute,
     AuthenticatedDashboardElectricalRoute:
       AuthenticatedDashboardElectricalRoute,
     AuthenticatedDashboardEngineRoute: AuthenticatedDashboardEngineRoute,
