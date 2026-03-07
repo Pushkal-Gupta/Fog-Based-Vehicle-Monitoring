@@ -1,8 +1,9 @@
 "use client"
 
 import { Html, Line, useGLTF } from "@react-three/drei"
+import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
-import { useEffect } from "react"
+import { useEffect, useRef, useState } from "react"
 import { VehicleOverlay } from "./VehicleOverlay"
 
 type Props = {
@@ -32,7 +33,17 @@ export function VehicleModel({ telemetry, insight }: Props) {
 
     const { scene } = useGLTF("/models/vehicle.glb")
 
+    const groupRef = useRef<THREE.Group>(null)
+
+    const [openOverlay, setOpenOverlay] = useState<string | null>(null)
+    const wheelRotationRef = useRef({
+        FL_WHEEL_1: 0,
+        FR_WHEEL_1: 0,
+        RL_WHEEL_1: 0,
+        RR_WHEEL_1: 0,
+    })
     useEffect(() => {
+
         console.log("---- GLB MESH LIST ----")
 
         scene.traverse((child) => {
@@ -42,15 +53,36 @@ export function VehicleModel({ telemetry, insight }: Props) {
         })
 
         console.log("---- END MESH LIST ----")
+
     }, [scene])
+
+    // auto rotation
+    useFrame((state, delta) => {
+        if (!groupRef.current) return
+
+        // --- Vehicle subtle hover animation ---
+        groupRef.current.position.y =
+            -1 + Math.sin(state.clock.elapsedTime * 1.2) * 0.03
+
+        // --- Wheel rotation based on vehicle speed ---
+        const wheelSpeed = (telemetry.speed || 0) * 5
+
+            ;['FL_WHEEL_1', 'FR_WHEEL_1', 'RL_WHEEL_1', 'RR_WHEEL_1'].forEach(wheelName => {
+                const mesh = scene.getObjectByName(wheelName)
+                if (mesh) {
+                    // Track accumulated rotation
+                    if (!wheelRotationRef.current[wheelName]) wheelRotationRef.current[wheelName] = 0
+                    wheelRotationRef.current[wheelName] += delta * wheelSpeed
+                    mesh.rotation.x = wheelRotationRef.current[wheelName]
+                }
+            })
+    })
 
     const overlays: Array<OverlayConfig> = [
 
-        // FRONT LEFT BRAKE
         {
             mesh: "FL_WHEEL_1",
             title: "Front Left Brake",
-
             anchorOffset: [-1.6, 0.1, 0],
             boxOffset: [-2.2, 1.2, 0],
 
@@ -68,11 +100,9 @@ export function VehicleModel({ telemetry, insight }: Props) {
             })
         },
 
-        // FRONT RIGHT BRAKE
         {
             mesh: "FR_WHEEL_1",
             title: "Front Right Brake",
-
             anchorOffset: [1.6, 0.1, 0],
             boxOffset: [2.2, 1.2, 0],
 
@@ -90,11 +120,9 @@ export function VehicleModel({ telemetry, insight }: Props) {
             })
         },
 
-        // ENGINE / POWERTRAIN
         {
             mesh: "Bottom",
             title: "Engine / Powertrain",
-
             anchorOffset: [0, -0.1, 2],
             boxOffset: [0, 1.8, 1.8],
 
@@ -111,11 +139,9 @@ export function VehicleModel({ telemetry, insight }: Props) {
             })
         },
 
-        // MECHANICAL VIBRATION
         {
             mesh: "Bottom",
             title: "Mechanical System",
-
             anchorOffset: [0, 0.2, -0.3],
             boxOffset: [-2.3, 1.3, -1.2],
 
@@ -131,11 +157,9 @@ export function VehicleModel({ telemetry, insight }: Props) {
             })
         },
 
-        // BATTERY SYSTEM
         {
             mesh: "Bottom",
             title: "Battery System",
-
             anchorOffset: [0, 0.2, 0],
             boxOffset: [2.3, 1.3, -0.8],
 
@@ -153,11 +177,9 @@ export function VehicleModel({ telemetry, insight }: Props) {
             })
         },
 
-        // AI DECISION LAYER
         {
             mesh: "Bottom",
             title: "AI Decision Layer",
-
             anchorOffset: [0, 0.8, 0],
             boxOffset: [0, 2.2, 0],
 
@@ -173,11 +195,9 @@ export function VehicleModel({ telemetry, insight }: Props) {
             })
         },
 
-        // SAFETY SYSTEMS
         {
             mesh: "Bottom",
             title: "Safety Systems",
-
             anchorOffset: [0, 0.5, -1],
             boxOffset: [0, 1.8, -2.3],
 
@@ -198,12 +218,16 @@ export function VehicleModel({ telemetry, insight }: Props) {
     ]
 
     return (
-        <primitive
-            object={scene}
+        <group
+            ref={groupRef}
             scale={1.5}
             position={[0, -1, 0]}
             rotation={[0, Math.PI, 0]}
+            onPointerMissed={() => setOpenOverlay(null)}
         >
+
+            <primitive object={scene} />
+
             {overlays.map((overlay, i) => {
 
                 const mesh = scene.getObjectByName(overlay.mesh)
@@ -228,6 +252,7 @@ export function VehicleModel({ telemetry, insight }: Props) {
                     : "normal"
 
                 return (
+
                     <group key={i}>
 
                         <Line
@@ -242,20 +267,25 @@ export function VehicleModel({ telemetry, insight }: Props) {
 
                         <Html
                             position={[end.x, end.y, end.z]}
-                            distanceFactor={6}
+                            distanceFactor={3}
+                            center
                         >
+
                             <VehicleOverlay
                                 title={overlay.title}
                                 data={data}
                                 status={status}
                             />
+
                         </Html>
 
                     </group>
+
                 )
 
             })}
-        </primitive>
+
+        </group>
     )
 }
 

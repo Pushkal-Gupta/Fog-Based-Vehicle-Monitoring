@@ -1,70 +1,85 @@
+"use client"
+
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardContent
+} from "@/components/ui/card"
+
+import { Badge } from "@/components/ui/badge"
+
 type Props = {
     title: string
     data: Record<string, any>
     status?: "normal" | "warning" | "critical"
 }
 
-export function VehicleOverlay({ title, data, status = "normal" }: Props) {
+export function VehicleOverlay({
+    title,
+    data,
+    status = "normal"
+}: Props) {
 
-    const borderColor =
+    const statusStyle =
         status === "critical"
-            ? "#ff3b3b"
+            ? "border-red-500 shadow-[0_0_12px_rgba(239,68,68,0.8)]"
             : status === "warning"
-            ? "#ffaa00"
-            : "rgba(255,255,255,0.2)"
+                ? "border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.7)]"
+                : "border-border"
 
-    const animation =
+    const badgeVariant =
         status === "critical"
-            ? "pulseCritical 1s infinite"
+            ? "destructive"
             : status === "warning"
-            ? "pulseWarn 2s infinite"
-            : "none"
+                ? "secondary"
+                : "outline"
 
     return (
-        <div
-            style={{
-                background: "rgba(0,0,0,0.85)",
-                color: "white",
-                padding: "6px 8px",
-                borderRadius: 8,
-                fontSize: 11,
-                minWidth: 120,
-                border: `1px solid ${borderColor}`,
-                animation
-            }}
+        <Card
+            className={`
+        w-[170px]
+        text-xs
+        bg-background/20
+        backdrop-blur
+        border
+        py-1
+        ${statusStyle}
+      `}
         >
 
-            <style>
-                {`
-                @keyframes pulseCritical {
-                    0% { box-shadow: 0 0 0px #ff3b3b }
-                    50% { box-shadow: 0 0 12px #ff3b3b }
-                    100% { box-shadow: 0 0 0px #ff3b3b }
-                }
+            <CardHeader className="flex flex-row items-center justify-between p-2 pb-0">
 
-                @keyframes pulseWarn {
-                    0% { box-shadow: 0 0 0px #ffaa00 }
-                    50% { box-shadow: 0 0 8px #ffaa00 }
-                    100% { box-shadow: 0 0 0px #ffaa00 }
-                }
-                `}
-            </style>
+                <CardTitle className="text-[11px] font-semibold">
+                    {title}
+                </CardTitle>
 
-            <div
-                style={{
-                    fontWeight: 600,
-                    marginBottom: 4
-                }}
-            >
-                {title}
-            </div>
+                <Badge variant={badgeVariant} className="text-[9px]">
+                    {status}
+                </Badge>
 
-            {Object.entries(data).map(([k, v]) => (
-                <div key={k}>
-                    <span style={{ opacity: 0.7 }}>{k}:</span> {v}
-                </div>
-            ))}
+            </CardHeader>
 
-        </div>
+            <CardContent className="p-2 pt-0 pt-1 space-y-[3px]">
+
+                {Object.entries(data).map(([k, v]) => (
+
+                    <div key={k} className="flex justify-between">
+
+                        <span className="text-muted-foreground">
+                            {k}
+                        </span>
+
+                        <span className="font-medium">
+                            {v}
+                        </span>
+
+                    </div>
+
+                ))}
+
+            </CardContent>
+
+        </Card>
     )
 }
