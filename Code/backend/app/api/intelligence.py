@@ -45,6 +45,10 @@ async def ingest_vehicle_data(payload: IntelligencePayload):
     try:
         inserted_id = await repo.insert_vehicle_data(payload)
         return {"inserted_id": str(inserted_id)}
-    except Exception:
-        raise HTTPException(status_code=500, detail="Failed to store vehicle data")
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to store vehicle data: {str(e)}"
+        )
     
