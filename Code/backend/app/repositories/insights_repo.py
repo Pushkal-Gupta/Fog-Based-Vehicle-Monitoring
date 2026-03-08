@@ -61,6 +61,7 @@ class InsightRepo:
             )
 
 
+
     async def get_latest_insight(self, vehicle_id: str):
         document = await (
             vehicle_ai_insights
@@ -69,10 +70,15 @@ class InsightRepo:
             .limit(1)
             .to_list(length=1)
         )
-
+    
         if not document:
             return None
-
+    
         doc = document[0]
+    
         doc["_id"] = str(doc["_id"])
+    
+        if isinstance(doc.get("source_ref"), ObjectId):
+            doc["source_ref"] = str(doc["source_ref"])
+    
         return doc
