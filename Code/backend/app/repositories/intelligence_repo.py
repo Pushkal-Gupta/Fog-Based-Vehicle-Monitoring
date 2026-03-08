@@ -97,31 +97,31 @@ class IntelligenceRepo:
         return await self._fetch(query, limit)
 
 
-async def insert_vehicle_data(self, payload: IntelligencePayload):
-    # Convert Pydantic model to dict
-    document = {
-        **payload.model_dump(),
-        "processing_meta": {
-            "ai_processed": False,
-            "processed_at": None,
-            "ai_version": None
-        },
-        "ingested_at": int(time.time() * 1000)
-    }
-
-    # 🔐 Sanitize all numeric values recursively
-    def validate_numeric_values(obj):
-        if isinstance(obj, dict):
-            for k, v in obj.items():
-                obj[k] = validate_numeric_values(v)
-        elif isinstance(obj, list):
-            return [validate_numeric_values(item) for item in obj]
-        elif isinstance(obj, float):
-            if not math.isfinite(obj):
-                raise ValueError("Non-finite numeric value detected (inf / -inf / NaN)")
-        return obj
-
-    validate_numeric_values(document)
-
-    result = await vehicle_edge_state.insert_one(document)
-    return str(result.inserted_id)
+    async def insert_vehicle_data(self, payload: IntelligencePayload):
+        # Convert Pydantic model to dict
+        document = {
+            **payload.model_dump(),
+            "processing_meta": {
+                "ai_processed": False,
+                "processed_at": None,
+                "ai_version": None
+            },
+            "ingested_at": int(time.time() * 1000)
+        }
+    
+        # 🔐 Sanitize all numeric values recursively
+        def validate_numeric_values(obj):
+            if isinstance(obj, dict):
+                for k, v in obj.items():
+                    obj[k] = validate_numeric_values(v)
+            elif isinstance(obj, list):
+                return [validate_numeric_values(item) for item in obj]
+            elif isinstance(obj, float):
+                if not math.isfinite(obj):
+                    raise ValueError("Non-finite numeric value detected (inf / -inf / NaN)")
+            return obj
+    
+        validate_numeric_values(document)
+    
+        result = await vehicle_edge_state.insert_one(document)
+        return str(result.inserted_id)
