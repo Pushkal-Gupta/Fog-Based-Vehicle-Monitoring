@@ -28,11 +28,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             Fog_AppTheme {
                 val navController = rememberNavController()
+                var dashboardUrl by remember { mutableStateOf("https://fog-dashboard.onrender.com/login") }
+
                 NavHost(navController = navController, startDestination = "login") {
                     composable("login") {
                         LoginScreen(onLogin = {
                             if (it == UserType.DEVELOPER) {
-                                navController.navigate("logs")
+                                navController.navigate("home/${it.name}")
                             } else {
                                 navController.navigate("home/${it.name}")
                             }
@@ -46,7 +48,9 @@ class MainActivity : ComponentActivity() {
                         HomeScreen(
                             userType = userType,
                             onTileClick = { category -> navController.navigate("chart/$category") },
-                            onLogsClick = { navController.navigate("logs") }
+                            onLogsClick = { navController.navigate("logs") },
+                            dashboardUrl = dashboardUrl,
+                            onUrlChange = { dashboardUrl = it }
                         )
                     }
                     composable(
