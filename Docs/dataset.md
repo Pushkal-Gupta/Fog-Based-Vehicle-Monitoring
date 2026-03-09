@@ -56,10 +56,6 @@ The following JSON represents the **raw telemetry data** received directly from 
   
   "brake_pad_remaining_pct": 34,
   "brake_disc_score": 0.71,
-  
-  "engine_rul_pct": 62,
-  "brake_rul_pct": 28,
-  "battery_rul_pct": 74,
 }
 ```
 
