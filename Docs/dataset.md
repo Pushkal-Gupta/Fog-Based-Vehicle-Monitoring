@@ -49,13 +49,8 @@ The following JSON represents the **raw telemetry data** received directly from 
   "brake_temp_rise_rate": 4.6,
   "vibration_rms": 0.84,
   "dominant_vibration_hz": 142,
-  
-  "engine_knock_prob": 0.12,
-  "engine_misfire_index": 0.04,
+
   "engine_load_pct": 68,
-  
-  "brake_pad_remaining_pct": 34,
-  "brake_disc_score": 0.71,
 }
 ```
 
