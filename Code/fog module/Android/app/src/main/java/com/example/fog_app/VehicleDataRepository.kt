@@ -8,6 +8,7 @@ object VehicleDataRepository {
     val esp32Ip = MutableStateFlow(ESP32_IP)
     val samplePeriod = MutableStateFlow(SAMPLE_PERIOD)
     val windowSec = MutableStateFlow(WINDOW_SEC)
+    val dashboardUrl = MutableStateFlow("https://fog-dashboard.onrender.com/login")
 
     // Output Data
     private val _vehicleData = MutableStateFlow<VehicleData?>(null)

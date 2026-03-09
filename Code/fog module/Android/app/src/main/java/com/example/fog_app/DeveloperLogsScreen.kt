@@ -30,10 +30,12 @@ fun DeveloperLogsScreen(onBack: () -> Unit, viewModel: DashboardViewModel = view
     val esp32Ip by viewModel.esp32Ip.collectAsState()
     val samplePeriod by viewModel.samplePeriod.collectAsState()
     val windowSec by viewModel.windowSec.collectAsState()
+    val dashboardUrl by viewModel.dashboardUrl.collectAsState()
 
     var esp32IpInput by remember(esp32Ip) { mutableStateOf(esp32Ip) }
     var samplePeriodInput by remember(samplePeriod) { mutableStateOf(samplePeriod.toString()) }
     var windowSecInput by remember(windowSec) { mutableStateOf(windowSec.toString()) }
+    var dashboardUrlInput by remember(dashboardUrl) { mutableStateOf(dashboardUrl) }
 
     Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
         Scaffold(
@@ -111,6 +113,23 @@ fun DeveloperLogsScreen(onBack: () -> Unit, viewModel: DashboardViewModel = view
                     unfocusedContainerColor = Color.DarkGray,
                     disabledContainerColor = Color.DarkGray,
                 )
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = dashboardUrlInput,
+                    onValueChange = { 
+                        dashboardUrlInput = it
+                        viewModel.setDashboardUrl(it)
+                    },
+                    label = { Text("Dashboard URL") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedContainerColor = Color.DarkGray,
+                        unfocusedContainerColor = Color.DarkGray,
+                        disabledContainerColor = Color.DarkGray,
+                    )
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 val aggregationValue = if (samplePeriod != 0.0) (windowSec / samplePeriod).toInt() else 0
