@@ -14,15 +14,6 @@ fun LoginScreen(onLogin: (UserType) -> Unit) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    // Autofill logic
-    LaunchedEffect(username) {
-        if (username == "User1") {
-            password = "User1"
-        } else if (username == "Dev1") {
-            password = "Dev1"
-        }
-    }
-
     Surface(color = Color.Black) {
         Column(
             modifier = Modifier
@@ -65,8 +56,8 @@ fun LoginScreen(onLogin: (UserType) -> Unit) {
             Spacer(modifier = Modifier.height(32.dp))
             Button(onClick = {
                 val userType = when {
-                    username.equals("Dev1", ignoreCase = true) && password == "Dev1" -> UserType.DEVELOPER
-                    username.equals("User1", ignoreCase = true) && password == "User1" -> UserType.USER
+                    username == "D1" && password == "D1" -> UserType.DEVELOPER
+                    username == "U1" && password == "U1" -> UserType.USER
                     else -> null
                 }
                 userType?.let(onLogin)

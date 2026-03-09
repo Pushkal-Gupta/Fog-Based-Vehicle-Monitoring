@@ -12,18 +12,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun HomeScreen(
     userType: UserType,
     onTileClick: (String) -> Unit,
     onLogsClick: () -> Unit,
-    dashboardUrl: String,
-    onUrlChange: (String) -> Unit
+    viewModel: DashboardViewModel = viewModel()
 ) {
+    val dashboardUrl by viewModel.dashboardUrl.collectAsState()
+
     when (userType) {
         UserType.USER -> UserHomeScreen(dashboardUrl)
-        UserType.DEVELOPER -> DeveloperHomeScreen(onLogsClick, dashboardUrl, onUrlChange)
+        UserType.DEVELOPER -> DeveloperHomeScreen(onLogsClick)
     }
 }
 
@@ -49,13 +51,6 @@ fun UserHomeScreen(url: String) {
                                                 }
                                                 if (inputs[i].type === 'password' || inputs[i].name === 'password' || inputs[i].id === 'password') {
                                                     inputs[i].value = 'JustD00it!';
-                                                }
-                                            }
-                                            // Optional: Try to find and click the login button
-                                            var buttons = document.getElementsByTagName('button');
-                                            for (var j = 0; j < buttons.length; j++) {
-                                                if (buttons[j].innerText.toLowerCase().includes('login') || buttons[j].type === 'submit') {
-                                                    // buttons[j].click(); // Uncomment to auto-submit
                                                 }
                                             }
                                         })();
@@ -91,25 +86,8 @@ fun UserHomeScreen(url: String) {
 }
 
 @Composable
-fun DeveloperHomeScreen(onLogsClick: () -> Unit, dashboardUrl: String, onUrlChange: (String) -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        OutlinedTextField(
-            value = dashboardUrl,
-            onValueChange = onUrlChange,
-            label = { Text("Dashboard URL") },
-            modifier = Modifier.fillMaxWidth(),
-            colors = TextFieldDefaults.colors(
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                focusedContainerColor = Color.DarkGray,
-                unfocusedContainerColor = Color.DarkGray
-            )
-        )
-        Spacer(modifier = Modifier.height(32.dp))
+fun DeveloperHomeScreen(onLogsClick: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Button(onClick = onLogsClick) {
             Text("View Logs")
         }

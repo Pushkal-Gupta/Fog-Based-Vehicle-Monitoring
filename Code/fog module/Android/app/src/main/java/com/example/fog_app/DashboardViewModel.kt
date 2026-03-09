@@ -9,6 +9,7 @@ class DashboardViewModel : ViewModel() {
     val esp32Ip: StateFlow<String> = VehicleDataRepository.esp32Ip
     val samplePeriod: StateFlow<Double> = VehicleDataRepository.samplePeriod
     val windowSec: StateFlow<Double> = VehicleDataRepository.windowSec
+    val dashboardUrl: StateFlow<String> = VehicleDataRepository.dashboardUrl
 
     fun getRawJson(): String = VehicleDataRepository.rawJson.value
 
@@ -24,6 +25,10 @@ class DashboardViewModel : ViewModel() {
 
     fun setWindowSec(sec: Double) {
         VehicleDataRepository.windowSec.value = sec
+    }
+
+    fun setDashboardUrl(url: String) {
+        VehicleDataRepository.dashboardUrl.value = url
     }
 
     fun getDataForCategory(category: String): List<Pair<String, Float>> {
