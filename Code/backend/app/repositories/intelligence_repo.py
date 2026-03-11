@@ -39,7 +39,7 @@ class IntelligenceRepo:
         cursor = (
             vehicle_edge_state
             .find(query)
-            .sort("timestamp_ms", -1)
+            .sort("ingested_at", -1)
             .limit(limit)
         )
 
