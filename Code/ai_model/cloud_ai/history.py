@@ -135,6 +135,5 @@ def blend(current: float, historical: float | None, current_weight: float = 0.7)
 
     if historical is None:
         return current
-    historical_weight = current_weight
-    current_weight = 1.0 - historical_weight
+    historical_weight = 1.0 - current_weight
     return (current_weight * current) + (historical_weight * historical)

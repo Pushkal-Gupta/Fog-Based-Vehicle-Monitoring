@@ -112,7 +112,7 @@ def analyze(data: CloudInput) -> CloudOutput:
             }
         ]
     )[FAILURE_FEATURES]
-    failure_prob = float(ModelRegistry.failure_model.predict_proba(failure_vector)[0][0])
+    failure_prob = float(ModelRegistry.failure_model.predict_proba(failure_vector)[0][1])
 
     fault_primary, contributors = explain_fault(data, failure_prob)
     recommendation = recommend_action(

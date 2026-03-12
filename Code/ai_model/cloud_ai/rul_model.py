@@ -9,8 +9,8 @@ from sklearn.model_selection import train_test_split
 RUL_FEATURES = [
     "thermal_stress_index",
     "brake_health_index",
-    "mechanical_vibration_anomoly_score",
-    "electrical_charging_efficency_score",
+    "mechanical_vibration_anomaly_score",
+    "electrical_charging_efficiency_score",
     "vehicle_health_score",
 ]
 RUL_TARGETS = {
