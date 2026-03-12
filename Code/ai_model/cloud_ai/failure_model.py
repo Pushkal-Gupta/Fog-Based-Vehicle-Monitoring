@@ -13,7 +13,7 @@ FAILURE_FEATURES = [
     "thermal_stress_index",
     "mechanical_vibration_anomaly_score",
 ]
-FAILURE_TARGET = "failure_in_next_7_days"
+FAILURE_TARGET = "failure_next_7_days"
 
 
 def train_failure_model(

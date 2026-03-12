@@ -46,8 +46,8 @@ def generate_synthetic_cloud_history(
 
     failure_next_7_days = (
         (engine_rul_pct < 45)
-        & (brake_rul_pct < 35)
-        & ((thermal_stress_index > 0.8) & (vibration_anomaly > 0.65))
+        | (brake_rul_pct < 35)
+        | ((thermal_stress_index > 0.8) & (vibration_anomaly > 0.65))
     ).astype(int)
 
     df = pd.DataFrame(

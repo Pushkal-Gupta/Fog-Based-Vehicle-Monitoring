@@ -112,6 +112,7 @@ def _score_single_record(record: dict) -> float:
         _WEIGHTS["vibration_anomaly"] * s_vib_anomaly +
         _WEIGHTS["thermal_stress"]    * s_thermal     +
         _WEIGHTS["fog_critical_class"]* s_fog_class   +
+        _WEIGHTS["fog_actuation"]     * s_fog_act
     )
 
     return _clamp(score)

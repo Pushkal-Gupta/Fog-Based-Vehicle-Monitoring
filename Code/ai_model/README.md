@@ -1,122 +1,235 @@
-# AI Model Layer
+# Cloud AI Advisory Layer
 
-## Overview
+This repository contains the **cloud-only intelligence layer** for predictive maintenance.
 
-The AI model layer provides **predictive intelligence and risk estimation** for the Fog-Based Vehicle Monitoring System. It analyzes historical and aggregated vehicle health data to identify degradation patterns, estimate component lifespan, and support long-term decision-making.
+## Scope and Authority Separation
 
-This layer **does not participate in real-time safety actuation** and is not part of the latency-critical execution path.
+Cloud logic is advisory only:
 
----
+- Remaining Useful Life (RUL) prediction
+- Failure probability prediction
+- Fault explanation
+- Maintenance recommendation
 
-## Role in the System
+Cloud does **not** perform real-time control or safety-critical actuation. Actuation authority remains fog-only.
 
-The AI model layer acts as the **analytical and learning component** of the system. While the fog module performs immediate interpretation and control, this layer focuses on:
+## Quick start (from scratch)
 
-- Learning from historical behavior
-- Detecting long-term degradation trends
-- Producing probabilistic risk assessments
+If you just want to run everything end-to-end locally, use this sequence:
 
-Its outputs are advisory and are consumed by the fog layer and backend services.
+```bash
+# 1) Install dependencies
+pip install -r requirements.txt
 
----
+# 2) Generate synthetic training data + train both models
+python scripts/run_full_pipeline.py --output-dir . --rows 1000 --seed 42
 
-## Core Responsibilities
+# 3) Start API server
+uvicorn cloud_ai.cloud_api:app --host 0.0.0.0 --port 8000
+```
 
-- Training models using historical vehicle health vectors
-- Performing inference for anomaly probability and degradation trends
-- Estimating Remaining Useful Life (RUL) for critical components
-- Refining models based on accumulated fleet-level data
+In a second terminal, test the server:
 
----
+```bash
+# Health
+curl -s http://127.0.0.1:8000/health
 
-## Inputs
+# Analyze (Section-6 cloud input)
+curl -s -X POST http://127.0.0.1:8000/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "vehicle_id": "VIT_CAR_001",
+    "timestamp_ms": 1707051123456,
+    "thermal_brake_margin": -0.21,
+    "thermal_engine_margin": 0.34,
+    "thermal_stress_index": 0.82,
+    "mechanical_vibration_anomaly_score": 0.77,
+    "mechanical_dominant_fault_band_hz": 142,
+    "mechanical_vibration_rms": 0.84,
+    "electrical_charging_efficiency_score": 0.81,
+    "electrical_battery_health_pct": 87,
+    "engine_rul_pct": 62,
+    "brake_rul_pct": 28,
+    "battery_rul_pct": 74,
+    "vehicle_health_score": 0.64
+  }'
+```
 
-The AI model layer consumes **preprocessed, semantic data** rather than raw sensor streams. Typical inputs include:
+Expected behavior:
 
-- Thermal stress indices
-- Electrical health metrics
-- Vibration and mechanical indicators
-- Driver behavior influence factors
-- Aggregated health vectors over time
+- `/health` returns advisory-only status.
+- `/analyze` returns cloud analytics only (RUL prediction, failure probability, explanation, recommendation).
 
-Example input vector:
+## Input schema (Section 6 only)
+
+The API accepts fog-curated analytics payloads (no raw Section-1 telemetry, no Section-2 fog internals):
 
 ```json
 {
+  "vehicle_id": "VIT_CAR_001",
+  "timestamp_ms": 1707051123456,
+  "thermal_brake_margin": -0.21,
+  "thermal_engine_margin": 0.34,
   "thermal_stress_index": 0.82,
-  "brake_health_index": 0.39,
-  "vibration_anomaly_score": 0.77,
-  "driver_aggression_score": 0.58
+  "mechanical_vibration_anomaly_score": 0.77,
+  "mechanical_dominant_fault_band_hz": 142,
+  "mechanical_vibration_rms": 0.84,
+  "electrical_charging_efficiency_score": 0.81,
+  "electrical_battery_health_pct": 87,
+  "engine_rul_pct": 62,
+  "brake_rul_pct": 28,
+  "battery_rul_pct": 74,
+  "vehicle_health_score": 0.64
 }
 ```
 
----
+## Training
 
-## Outputs
+1. Prepare `cloud_health_history.csv` with required columns.
+2. Train models:
 
-Model outputs are probabilistic and predictive in nature, including:
+```bash
+python -m cloud_ai.rul_model
+python -m cloud_ai.failure_model
+```
 
-- Anomaly likelihood scores
-- Component degradation trends
-- Remaining Useful Life (RUL) estimates
-- Risk classification labels
+This produces:
 
-### Example Output
+- `rul_model.pkl`
+- `failure_model.pkl`
+
+## Run API
+
+```bash
+uvicorn cloud_ai.cloud_api:app --host 0.0.0.0 --port 8000
+```
+
+## Endpoints
+
+- `GET /health`
+- `POST /analyze`
+
+Example analytical output (Section 7 style, advisory-only):
 
 ```json
 {
-  "brake_rul_pct": 28,
-  "engine_rul_pct": 62,
-  "battery_rul_pct": 74,
-  "failure_probability_7d": 0.61
+  "vehicle_id": "VIT_CAR_001",
+  "timestamp_ms": 1707051123456,
+  "engine_rul_pct": 58.21,
+  "brake_rul_pct": 28.0,
+  "battery_rul_pct": 74.0,
+  "fault_failure_probability_7d": 0.61,
+  "fault_primary": "BRAKE_THERMAL_SATURATION",
+  "fault_contributing_factors": [
+    "high_thermal_stress_index",
+    "low_brake_rul_pct"
+  ],
+  "recommendation": {
+    "recommendation_service_priority": "high",
+    "recommendation_suggested_action": "Brake inspection and pad replacement",
+    "recommendation_safe_operating_limit_km": 120
+  }
 }
 ```
 
----
 
-## Model Scope
+## Historical data support (MongoDB)
 
-The AI model layer may include:
+Yes — the cloud API can take **historical Section-6 data** into account during inference.
 
-- Statistical models for long-term trend analysis
-- Machine learning classifiers for anomaly detection
-- Regression models for lifecycle estimation
-- Lightweight inference models for edge or fog deployment
+At each `/analyze` call:
 
-Training and evaluation are typically performed in cloud or offline environments, while inference models may be optimized for deployment at the fog layer.
+1. It fetches recent records for the same `vehicle_id` (window size from `HISTORY_WINDOW_SIZE`, default `50`).
+2. It blends current Section-6 values with historical averages.
+3. It predicts RUL and failure probability using these blended features.
+4. It stores the current Section-6 payload back to history for the next cycle.
 
----
+### Configure MongoDB backend
 
-## Non-Responsibilities
+```bash
+export CLOUD_MONGO_URI="mongodb://localhost:27017"
+export CLOUD_MONGO_DB="cloud_ai"
+export CLOUD_MONGO_COLLECTION="section6_history"
+export HISTORY_WINDOW_SIZE=50
+```
 
-The AI model layer explicitly does **not**:
+Then start API normally:
 
-- Capture or preprocess raw sensor signals
-- Define safety thresholds or decision rules
-- Trigger actuation or control actions
-- Manage real-time system state
+```bash
+uvicorn cloud_ai.cloud_api:app --host 0.0.0.0 --port 8000
+```
 
-These responsibilities are owned by the fog module.
+If `CLOUD_MONGO_URI` is not set or unavailable, the API falls back safely to no-history mode.
 
----
+For local non-Mongo experimentation, you can use in-memory history:
 
-## Execution Environment
+```bash
+export CLOUD_HISTORY_BACKEND=memory
+```
 
-- Model training and evaluation in cloud or offline environments
-- Optional lightweight inference deployment (for example, TensorFlow Lite)
-- Non-real-time execution requirements
+`GET /health` reports which history backend is active (`mongo`, `memory`, or `none`).
 
----
+## Groq LLM recommendations (optional)
 
-## Design Principles
+The recommendation engine can use the **Groq API** for AI-generated maintenance advice.
+When configured, Groq produces context-aware recommendations based on the full fault analysis.
+If Groq is unavailable or errors, the system **automatically falls back** to the built-in rule-based engine.
 
-- Prediction over control
-- Probabilistic insight over deterministic action
-- Semantic feature learning over raw signal processing
-- Advisory intelligence, not authority
+### Configure Groq
 
----
+```bash
+export GROQ_API_KEY="gsk_your_key_here"
+# Optional: override the default model (default: llama-3.3-70b-versatile)
+export GROQ_MODEL="llama-3.3-70b-versatile"
+```
 
-## Summary
+Without `GROQ_API_KEY`, the API uses rule-based recommendations only (no Groq calls).
 
-The AI model layer enhances the system with **predictive and anticipatory intelligence**, enabling early fault detection and condition-based maintenance while leaving real-time safety decisions to the fog module.
+`GET /health` reports `"groq_configured": true/false`.
+
+The recommendation output includes `"recommendation_source"`: either `"groq"` or `"rule_based"`.
+
+## Validation
+
+Run the full local validation suite:
+
+```bash
+python -m compileall cloud_ai tests
+python -m unittest discover -s tests -v
+```
+
+The end-to-end test trains both models on a synthetic Section-6-style dataset and validates `/analyze` output through FastAPI `TestClient`.
+
+## Generate synthetic training data
+
+If you do not yet have historical cloud data, generate a Section-6 style training dataset:
+
+```bash
+python -m cloud_ai.data_generation
+```
+
+This creates `cloud_health_history.csv` with labels for:
+
+- `engine_rul_pct_future` (for RUL regression)
+- `failure_next_7_days` (for failure classification)
+
+## One-command full validation
+
+To test every part (data generation → training → API inference) run:
+
+```bash
+python scripts/test_everything.py
+```
+
+
+To generate data and train persisted artifacts in one command:
+
+```bash
+python scripts/run_full_pipeline.py --output-dir . --rows 1000 --seed 42
+```
+
+This will create:
+
+- `cloud_health_history.csv`
+- `rul_model.pkl`
+- `failure_model.pkl`

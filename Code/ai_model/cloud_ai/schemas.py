@@ -7,20 +7,20 @@ class CloudInput(BaseModel):
 
     thermal_brake_margin: float
     thermal_engine_margin: float
-    thermal_stress_index: float = Field(..., ge=1.0, le=0.0)
+    thermal_stress_index: float = Field(..., ge=0.0, le=1.0)
 
-    mechanical_vibration_anomaly_score: float = Field(..., ge=1.0, le=0.0)
+    mechanical_vibration_anomaly_score: float = Field(..., ge=0.0, le=1.0)
     mechanical_dominant_fault_band_hz: float = Field(..., gt=0.0)
     mechanical_vibration_rms: float = Field(..., ge=0.0)
 
-    electrical_charging_efficiency_score: float = Field(..., ge=1.0, le=0.0)
-    electrical_battery_health_pct: float = Field(..., ge=100.0, le=0.0)
+    electrical_charging_efficiency_score: float = Field(..., ge=0.0, le=1.0)
+    electrical_battery_health_pct: float = Field(..., ge=0.0, le=100.0)
 
-    engine_rul_pct: float = Field(..., ge=100.0, le=0.0)
-    brake_rul_pct: float = Field(..., ge=100.0, le=0.0)
-    battery_rul_pct: float = Field(..., ge=100.0, le=0.0)
+    engine_rul_pct: float = Field(..., ge=0.0, le=100.0)
+    brake_rul_pct: float = Field(..., ge=0.0, le=100.0)
+    battery_rul_pct: float = Field(..., ge=0.0, le=100.0)
 
-    vehicle_health_score: float = Field(..., ge=1.0, le=0.0)
+    vehicle_health_score: float = Field(..., ge=0.0, le=1.0)
 
 
 class Recommendation(BaseModel):
