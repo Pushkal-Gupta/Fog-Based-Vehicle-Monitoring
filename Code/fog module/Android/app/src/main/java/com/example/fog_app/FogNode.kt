@@ -7,7 +7,7 @@ import kotlin.concurrent.thread
 const val SAMPLE_PERIOD = 0.5
 const val WINDOW_SEC = 10.0
 const val MAX_SAMPLES = (WINDOW_SEC / SAMPLE_PERIOD).toInt()
-const val ESP32_IP = "192.168.213.78"
+const val ESP32_IP = "172.16.111.78"
 
 /* ================= MAIN LOOP ================= */
 

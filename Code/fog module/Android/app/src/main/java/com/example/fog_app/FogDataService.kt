@@ -4,7 +4,6 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import com.google.gson.GsonBuilder
 import kotlinx.coroutines.*
 
 class FogDataService : Service() {
@@ -22,7 +21,9 @@ class FogDataService : Service() {
 
             while (isActive) {
                 try {
-                    val data = getDataFromESP32(ESP32_IP)
+                    // Use the dynamic IP from the repository
+                    val currentIp = VehicleDataRepository.esp32Ip.value
+                    val data = getDataFromESP32(currentIp)
                     buffer.push(data)
 
                     if (buffer.full()) {
@@ -30,7 +31,7 @@ class FogDataService : Service() {
                         val health = computeHealth(agg)
 
                         if (health["actuation"] as Boolean) {
-                            sendToESP32(ESP32_IP, buildActuationPacket(agg, health))
+                            sendToESP32(currentIp, buildActuationPacket(agg, health))
                             sendToBackend(CLOUD_URL, buildCloudPacket(agg, health))
                             lastCloud = System.nanoTime()
                         } else if ((System.nanoTime() - lastCloud) / 1e9 >= 1) {
@@ -39,7 +40,6 @@ class FogDataService : Service() {
                         }
                     }
 
-                    // Use delay instead of Thread.sleep
                     nextTick += (SAMPLE_PERIOD * 1e9).toLong()
                     val sleepNanos = nextTick - System.nanoTime()
                     if (sleepNanos > 0) {
