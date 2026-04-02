@@ -25,4 +25,12 @@ object VehicleDataRepository {
         _rawJson.value = newJson
         _processedHealthVector.value = newHealthVector
     }
+
+    fun updateRawJson(json: String) {
+        _rawJson.value = json
+    }
+
+    fun updateProcessedHealthVector(vector: String) {
+        _processedHealthVector.value = vector
+    }
 }

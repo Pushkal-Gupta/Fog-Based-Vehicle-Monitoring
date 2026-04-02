@@ -107,9 +107,17 @@ fun computeHealth(d: Map<String, Any>): Map<String, Any> {
 
     val vehicleHealth = 0.35 * (engineRul / 100.0) + 0.45 * (brakeRul / 100.0) + 0.20 * (batteryRul / 100.0)
 
-    val thermalProtection = brakeTemp > 180 && riseRate > 3.0
-    val emergency = vehicleHealth < 0.35
-    val actuation = thermalProtection || emergency
+    val thermalProtection = brakeTemp > 180 || (brakeTemp > 150 && riseRate > 3.0)
+    val emergency = vehicleHealth < 0.35 || thermalStress > 0.9
+    val predictiveService = vehicleHealth < 0.6
+    val vibrationDamping = vibAnomaly > 0.7
+
+    val criticalClass = when {
+        emergency -> 3
+        thermalProtection || vibrationDamping -> 2
+        predictiveService -> 1
+        else -> 0
+    }
 
     return mapOf(
         "thermal_stress" to thermalStress,
@@ -117,7 +125,10 @@ fun computeHealth(d: Map<String, Any>): Map<String, Any> {
         "vehicle_health" to vehicleHealth,
         "thermal_protection" to thermalProtection,
         "emergency" to emergency,
-        "actuation" to actuation,
+        "predictive_service" to predictiveService,
+        "vibration_damping" to vibrationDamping,
+        "critical_class" to criticalClass,
+        "actuation" to (criticalClass >= 1),
         "confidence" to clamp(0.8 + 0.2 * (1 - vibAnomaly))
     )
 }
@@ -125,19 +136,23 @@ fun computeHealth(d: Map<String, Any>): Map<String, Any> {
 /* ================= PACKETS ================= */
 
 fun buildActuationPacket(d: Map<String, Any>, h: Map<String, Any>) = mapOf(
-    "timestamp_ms" to d["timestamp_ms"]!!,
+    "timestamp_ms" to d.l("timestamp_ms"),
     "decision_origin" to "fog_node",
     "cloud_dependency" to false,
-    "trigger_measured_brake_temp_c" to d["brake_temp_c"]!!,
-    "trigger_brake_temp_rise_rate" to d["brake_temp_rise_rate"]!!,
-    "trigger_brake_health_index" to ((h["vehicle_health"] as? Double ?: 1.0)),
-    "fog_decision_critical_class" to if (h["thermal_protection"] as Boolean) 2 else if (h["emergency"] as Boolean) 3 else 1,
+
+    "trigger_measured_brake_temp_c" to d.d("brake_temp_c"),
+    "trigger_brake_temp_rise_rate" to d.d("brake_temp_rise_rate"),
+    "trigger_brake_health_index" to h.d("vehicle_health"),
+
+    "fog_decision_critical_class" to (h["critical_class"] as Int),
     "fog_decision_actuation_triggered" to if (h["actuation"] as Boolean) 1 else 0,
-    "fog_decision_confidence" to h["confidence"]!!,
-    "fog_thermal_protection_active" to h["thermal_protection"]!!,
-    "fog_vibration_damping_mode_active" to h["emergency"]!!,
-    "fog_predictive_service_required" to ((h["vehicle_health"] as Double) < 0.6),
-    "fog_emergency_safeguard_active" to h["emergency"]!!
+    "fog_decision_confidence" to h.d("confidence"),
+
+    "fog_thermal_protection_active" to (h["thermal_protection"] as Boolean),
+    "fog_brake_stress_mitigation_active" to (h.d("thermal_stress") > 0.6),
+    "fog_vibration_damping_mode_active" to (h["vibration_damping"] as Boolean),
+    "fog_predictive_service_required" to (h["predictive_service"] as Boolean),
+    "fog_emergency_safeguard_active" to (h["emergency"] as Boolean)
 )
 
 fun buildCloudPacket(d: Map<String, Any>, h: Map<String, Any>): Map<String, Any> {
@@ -163,22 +178,11 @@ fun buildCloudPacket(d: Map<String, Any>, h: Map<String, Any>): Map<String, Any>
 
     val chargingEfficiency = if (outV in 13.5..14.4 && battV > 11.8) 1.0 else 0.6
 
-    val thermalProtection = h["thermal_protection"] as Boolean
-    val emergency = h["emergency"] as Boolean
-    val serviceRequired = vehicleHealth < 0.6
-
-    val criticalClass = when {
-        emergency -> 3
-        thermalProtection -> 2
-        serviceRequired -> 1
-        else -> 0
-    }
-
     return mapOf(
         "vehicle_id" to d.s("vehicle_id"),
         "timestamp_ms" to d.l("timestamp_ms"),
-        "fog_decision_critical_class" to criticalClass,
-        "fog_decision_actuation_triggered" to if (criticalClass >= 2) 1 else 0,
+        "fog_decision_critical_class" to (h["critical_class"] as Int),
+        "fog_decision_actuation_triggered" to if (h["actuation"] as Boolean) 1 else 0,
         "fog_decision_confidence" to h.d("confidence"),
 
         "thermal_brake_margin" to (1.0 - normTemp),
@@ -201,11 +205,11 @@ fun buildCloudPacket(d: Map<String, Any>, h: Map<String, Any>): Map<String, Any>
         "trigger_brake_temp_rise_rate" to riseRate,
         "trigger_brake_health_index" to (brakeRul / 100.0),
 
-        "fog_thermal_protection_active" to thermalProtection,
+        "fog_thermal_protection_active" to (h["thermal_protection"] as Boolean),
         "fog_brake_stress_mitigation_active" to (thermalStress > 0.6),
-        "fog_vibration_damping_mode_active" to emergency,
-        "fog_predictive_service_required" to serviceRequired,
-        "fog_emergency_safeguard_active" to emergency
+        "fog_vibration_damping_mode_active" to (h["vibration_damping"] as Boolean),
+        "fog_predictive_service_required" to (h["predictive_service"] as Boolean),
+        "fog_emergency_safeguard_active" to (h["emergency"] as Boolean)
     )
 }
 
